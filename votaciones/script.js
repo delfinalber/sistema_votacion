@@ -154,9 +154,9 @@ function limpiarFormularioVotacion() {
 }
 
 // Funciones del modal de configuración
-function mostrarModalKey() {
-    mostrarConfigArea();
-}
+//function mostrarModalKey() {
+    //mostrarConfigArea();
+//}
 
 // ELIMINA O COMENTA ESTAS FUNCIONES:
 // function cerrarModalKey() {
