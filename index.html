@@ -909,8 +909,10 @@
             sessionStorage.removeItem('usuario_id');
             sessionStorage.removeItem('usuario_nombre');
 
-            // Limpiar formulario
-            limpiarFormulario();
+            // Limpiar formulario completamente
+            inputUsuario.value = '';
+            inputPassword.value = '';
+            limpiarMensajeError();
 
             // Mostrar modal
             mostrarModal();
@@ -982,7 +984,6 @@
 
             const usuario = inputUsuario.value.trim();
             const password = inputPassword.value.trim();
-            const modalMessage = document.getElementById('modalMessage');
 
             // Validar que no estén vacíos
             if (!usuario || !password) {
@@ -995,12 +996,14 @@
             mostrarMensaje('Verificando credenciales...', 'loading');
 
             try {
-                const response = await fetch('./Votaciones/api/validar_sesion.php', {
+                // Construir la URL correcta
+                const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/validar_sesion.php';
+                
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    credentials: 'same-origin',
                     body: JSON.stringify({
                         usuario: usuario,
                         password: password
@@ -1026,16 +1029,16 @@
                         window.location.href = 'registrop.html';
                     }, 500);
                 } else {
-                    // Credenciales inválidas
+                    // Credenciales inválidas o error
                     btnAcceder.disabled = false;
                     mostrarMensaje(data.message || 'Usuario o contraseña incorrectos', 'error');
                     inputPassword.value = '';
                     inputPassword.focus();
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error en validación:', error);
                 btnAcceder.disabled = false;
-                mostrarMensaje('Error de conexión. Intenta de nuevo.', 'error');
+                mostrarMensaje('Error de conexión: ' + error.message, 'error');
             }
         }
 
