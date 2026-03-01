@@ -104,6 +104,57 @@
     </footer>
 
     <script>
+        // ======================================
+        // VERIFICAR AUTENTICACIÓN AL CARGAR
+        // ======================================
+        window.addEventListener('load', function() {
+            // Verificar si el usuario está autenticado
+            const autenticado = sessionStorage.getItem('autenticado');
+            
+            if (!autenticado) {
+                // Si no está autenticado, regresar a index.html
+                alert('Acceso denegado. Por favor, autentícate primero.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Limpiar caché e historial después de acceder
+            limpiarCacheYHistorial();
+        });
+
+        // ======================================
+        // LIMPIAR CACHÉ E HISTORIAL
+        // ======================================
+        function limpiarCacheYHistorial() {
+            // Prevenir ir atrás en el navegador
+            window.history.replaceState(null, '', window.location.href);
+            
+            // Desabilitar botón atrás del navegador
+            window.history.pushState(null, '', window.location.href);
+            window.onpopstate = function() {
+                window.history.pushState(null, '', window.location.href);
+            };
+
+            // Limpiar caché del navegador (si es posible)
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+
+            // Desabilitar tecla atrás (Alt+Izquierda en algunos navegadores)
+            document.addEventListener('keydown', function(event) {
+                if ((event.altKey || event.metaKey) && event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        // ======================================
+        // MANEJO DEL FORMULARIO
+        // ======================================
         document.getElementById('adminRegisterForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -123,6 +174,14 @@
             sessionStorage.setItem('datosAdministrador', JSON.stringify(datosAdmin));
 
             window.location.href = 'votacion.html';
+        });
+
+        // ======================================
+        // PROTEGER CONTRA CIERRE DE SESIÓN ACCIDENTAL
+        // ======================================
+        window.addEventListener('beforeunload', function(event) {
+            // Opcional: mostrar confirmación si intenta salir sin guardar
+            // return event.returnValue = 'Los cambios no guardados se perderán';
         });
     </script>
 

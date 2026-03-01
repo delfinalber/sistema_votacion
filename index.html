@@ -396,6 +396,208 @@
             font-weight: 600;
         }
 
+        /* === ESTILOS DEL MODAL DE SESIÓN === */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease-out;
+            border: 3px solid #2e7d32;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .modal-title {
+            color: #2e7d32;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .modal-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .modal-timer {
+            color: #e74c3c;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #2e7d32;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #c8e6c9;
+            border-radius: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2e7d32;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #999;
+        }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-modal {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-acceder {
+            background: #2e7d32;
+            color: white;
+            grid-column: 1 / 3;
+        }
+
+        .btn-acceder:hover {
+            background: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-acceder:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-cerrar {
+            background: #f0f0f0;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            grid-column: 1 / 3;
+        }
+
+        .btn-cerrar:hover {
+            background: #e8f5e9;
+            transform: translateY(-2px);
+        }
+
+        .modal-message {
+            text-align: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .modal-message.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef5350;
+            display: block;
+        }
+
+        .modal-message.loading {
+            background: #e3f2fd;
+            color: #1565c0;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 30px 20px;
+                max-width: 90%;
+            }
+
+            .modal-title {
+                font-size: 24px;
+            }
+
+            .modal-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-acceder {
+                grid-column: 1;
+            }
+
+            .btn-cerrar {
+                grid-column: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .content-grid {
                 grid-template-columns: 1fr;
@@ -458,6 +660,40 @@
 <body>
     <div class="header">  
         <img src="Votaciones/Img/baner.png" alt="Banner Institución Educativa">
+    </div>
+
+    <!-- MODAL DE AUTENTICACIÓN DE SESIÓN -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🔐 Identificación</h2>
+                <p class="modal-subtitle">Ingresa tus credenciales para acceder</p>
+                <p class="modal-timer">Se cerrará automáticamente en: <span id="timerModal">20</span>s</p>
+            </div>
+
+            <form id="formAutenticacion" onsubmit="validarSesion(event)">
+                <div id="modalMessage" class="modal-message"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Código de Usuario</label>
+                    <input type="text" id="inputUsuario" class="form-input" placeholder="Ej: 12345" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" id="inputPassword" class="form-input" placeholder="Ingresa tu contraseña" required>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="submit" id="btnAcceder" class="btn-modal btn-acceder">
+                        ✓ Acceder
+                    </button>
+                    <button type="button" id="btnCerrar" class="btn-modal btn-cerrar">
+                        ✕ Cerrar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <div class="main-container">
@@ -605,6 +841,169 @@
     </button>
 
     <script>
+        // ======================================
+        // VARIABLES GLOBALES
+        // ======================================
+        let timerModalInterval;
+        let tiempoRestanteModal = 20;
+        const modal = document.getElementById('authModal');
+        const btnCerrar = document.getElementById('btnCerrar');
+        const votingButton = document.getElementById('votingButton');
+
+        // ======================================
+        // MOSTRAR MODAL AL CARGAR LA PÁGINA
+        // ======================================
+        window.addEventListener('load', function() {
+            mostrarModal();
+            iniciarTimerModal();
+        });
+
+        // ======================================
+        // MOSTRAR MODAL DE AUTENTICACIÓN
+        // ======================================
+        function mostrarModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ======================================
+        // CERRAR MODAL
+        // ======================================
+        function cerrarModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Limpiar historial y caché
+            limpiarCacheEHistorial();
+            
+            // Reiniciar timer
+            tiempoRestanteModal = 20;
+            document.getElementById('timerModal').textContent = tiempoRestanteModal;
+        }
+
+        // ======================================
+        // VALIDAR SESIÓN CONTRA LA BD
+        // ======================================
+        async function validarSesion(event) {
+            event.preventDefault();
+            
+            const usuario = document.getElementById('inputUsuario').value.trim();
+            const password = document.getElementById('inputPassword').value.trim();
+            const modalMessage = document.getElementById('modalMessage');
+            const btnAcceder = document.getElementById('btnAcceder');
+
+            // Validar que no estén vacíos
+            if (!usuario || !password) {
+                mostrarMensaje('Por favor completa todos los campos', 'error');
+                return;
+            }
+
+            // Mostrar loading
+            btnAcceder.disabled = true;
+            mostrarMensaje('Verificando credenciales...', 'loading');
+
+            try {
+                const response = await fetch('Votaciones/api/validar_sesion.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario: usuario,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar información de sesión en sessionStorage (se borra al cerrar la pestaña)
+                    sessionStorage.setItem('usuario_id', data.usuario_id);
+                    sessionStorage.setItem('usuario_nombre', data.usuario_nombre);
+                    sessionStorage.setItem('autenticado', 'true');
+                    
+                    // Detener el timer del modal
+                    clearInterval(timerModalInterval);
+                    
+                    // Limpiar formulario
+                    document.getElementById('formAutenticacion').reset();
+                    
+                    // Redirigir a registrop.html
+                    setTimeout(() => {
+                        window.location.href = 'registrop.html';
+                    }, 500);
+                } else {
+                    btnAcceder.disabled = false;
+                    mostrarMensaje(data.message || 'Credenciales inválidas', 'error');
+                    document.getElementById('inputPassword').value = '';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                btnAcceder.disabled = false;
+                mostrarMensaje('Error de conexión. Intenta de nuevo.', 'error');
+            }
+        }
+
+        // ======================================
+        // MOSTRAR MENSAJES EN EL MODAL
+        // ======================================
+        function mostrarMensaje(texto, tipo) {
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.textContent = texto;
+            modalMessage.className = 'modal-message ' + tipo;
+            
+            // Auto-limpiar si es error (después de 5 segundos)
+            if (tipo === 'error') {
+                setTimeout(() => {
+                    modalMessage.className = 'modal-message';
+                    modalMessage.textContent = '';
+                }, 5000);
+            }
+        }
+
+        // ======================================
+        // TIMER AUTOMÁTICO DEL MODAL (20 SEGUNDOS)
+        // ======================================
+        function iniciarTimerModal() {
+            tiempoRestanteModal = 20;
+            document.getElementById('timerModal').textContent = tiempoRestanteModal;
+            
+            timerModalInterval = setInterval(() => {
+                tiempoRestanteModal--;
+                document.getElementById('timerModal').textContent = tiempoRestanteModal;
+                
+                if (tiempoRestanteModal <= 0) {
+                    clearInterval(timerModalInterval);
+                    cerrarModal();
+                }
+            }, 1000);
+        }
+
+        // ======================================
+        // BOTÓN CERRAR DEL MODAL
+        // ======================================
+        btnCerrar.addEventListener('click', function() {
+            clearInterval(timerModalInterval);
+            cerrarModal();
+        });
+
+        // ======================================
+        // LIMPIAR CACHÉ E HISTORIAL
+        // ======================================
+        function limpiarCacheEHistorial() {
+            // Limpiar sessionStorage (datos de sesión)
+            sessionStorage.clear();
+            
+            // Limpiar localStorage (opcional, según requieras)
+            // localStorage.clear();
+            
+            // Reemplazar el historial para que no se pueda volver atrás
+            window.history.replaceState(null, '', window.location.href);
+        }
+
+        // ======================================
+        // COUNTDOWN DE VOTACIÓN (CÓDIGO ORIGINAL)
+        // ======================================
         // Cargar fecha de votación desde localStorage o usar fecha por defecto
         function obtenerFechaVotacion() {
             const fechaGuardada = localStorage.getItem('fechaVotacion');
