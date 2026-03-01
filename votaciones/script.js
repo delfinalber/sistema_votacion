@@ -155,24 +155,23 @@ function limpiarFormularioVotacion() {
 
 // Funciones del modal de configuración
 function mostrarModalKey() {
-    document.getElementById('modalKey').style.display = 'flex';
-    document.getElementById('keyInput').value = '';
-    document.getElementById('keyInput').focus();
+    mostrarConfigArea();
 }
 
-function cerrarModalKey() {
-    document.getElementById('modalKey').style.display = 'none';
-}
+// ELIMINA O COMENTA ESTAS FUNCIONES:
+// function cerrarModalKey() {
+//     document.getElementById('modalKey').classList.add('hidden');
+// }
 
-function verificarKey() {
-    const key = document.getElementById('keyInput').value;
-    if (key === CLAVE_CONFIG) {
-        cerrarModalKey();
-        mostrarConfiguracion();
-    } else {
-        mostrarMensaje('Clave incorrecta', 'error');
-    }
-}
+// function verificarKey() {
+//     const key = document.getElementById('keyInput').value;
+//     if (key === '123') {
+//         document.getElementById('modalKey').classList.add('hidden');
+//         mostrarConfigArea();
+//     } else {
+//         alert('Clave incorrecta');
+//     }
+// }
 
 // Funciones de configuración
 function mostrarConfiguracion() {
