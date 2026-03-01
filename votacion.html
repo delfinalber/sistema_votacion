@@ -953,8 +953,8 @@
 
         <div id="tabVotantes" class="tab-content">
             <div class="file-upload">
-                <label>📁 Cargar archivo Excel de votantes:</label>
-                <input type="file" id="archivoVotantes" accept=".xlsx,.xls" onchange="cargarVotantesExcel(this)">
+                <label for="archivoVotantes">📁 Cargar archivo Excel de votantes:</label>
+                <input type="file" id="archivoVotantes" accept=".xlsx,.xls" onchange="cargarVotantesExcel(this)" title="Seleccione un archivo Excel con la lista de votantes">
                 <p id="statusCarga"></p>
             </div>
             
@@ -980,7 +980,8 @@
                     <div class="form-candidato">
                         <input type="text" id="nombrePersonero" placeholder="Nombre del candidato">
                         <input type="number" id="numeroPersonero" placeholder="Número" min="1">
-                        <input type="file" id="fotoPersonero" accept="image/*">
+                        <label for="fotoPersonero">Foto:</label>
+                        <input type="file" id="fotoPersonero" accept="image/*" title="Seleccione una imagen para el candidato">
                         <button onclick="agregarCandidatoPersonero()" class="btn-agregar">Agregar</button>
                     </div>
                     <div id="listaPersoneros"></div>
@@ -991,7 +992,8 @@
                     <div class="form-candidato">
                         <input type="text" id="nombreContralor" placeholder="Nombre del candidato">
                         <input type="number" id="numeroContralor" placeholder="Número" min="1">
-                        <input type="file" id="fotoContralor" accept="image/*">
+                        <label for="fotoContralor">Foto:</label>
+                        <input type="file" id="fotoContralor" accept="image/*" title="Seleccione una imagen para el candidato">
                         <button onclick="agregarCandidatoContralor()" class="btn-agregar">Agregar</button>
                     </div>
                     <div id="listaContralores"></div>
@@ -1005,7 +1007,7 @@
                 <div class="fecha-config">
                     <h4>📅 Fecha y Hora de Inicio de Votación</h4>
                     <div class="form-sistema">
-                        <input type="datetime-local" id="fechaVotacionInput">
+                        <input type="datetime-local" id="fechaVotacionInput" title="Seleccione la fecha y hora de inicio de la votación">
                         <button onclick="actualizarFechaVotacion()" class="btn-agregar">Actualizar Fecha</button>
                     </div>
                     <p class="info-text">Esta fecha se mostrará en el contador de la página principal</p>
