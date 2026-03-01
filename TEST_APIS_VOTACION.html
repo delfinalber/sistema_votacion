@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing APIs - Sistema de Votación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background-color: #764ba2;
+        }
+        
+        .response {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .response pre {
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .success {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+        
+        .error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Testing APIs - Sistema de Votación</h1>
+        
+        <!-- Test Validar Votante -->
+        <div class="test-section">
+            <h2>1️⃣ Validar Votante</h2>
+            <div class="input-group">
+                <label>ID de Votante:</label>
+                <input type="text" id="idVotante" placeholder="Ej: 1001" value="1001">
+            </div>
+            <button onclick="testValidarVotante()">Ejecutar</button>
+            <div id="responseValidarVotante"></div>
+        </div>
+        
+        <!-- Test Obtener Candidatos -->
+        <div class="test-section">
+            <h2>2️⃣ Obtener Candidatos</h2>
+            <button onclick="testObtenerCandidatos()">Ejecutar</button>
+            <div id="responseObtenerCandidatos"></div>
+        </div>
+        
+        <!-- Test Registrar Votos -->
+        <div class="test-section">
+            <h2>3️⃣ Registrar Votos Completo</h2>
+            <div class="input-group">
+                <label>ID de Votante:</label>
+                <input type="text" id="idVotanteRegistrar" placeholder="Ej: 1001" value="1002">
+            </div>
+            <div class="input-group">
+                <label>ID Candidato Personero:</label>
+                <input type="text" id="idPersonero" placeholder="Ej: 1 (o 0 para blanco)" value="1">
+            </div>
+            <div class="input-group">
+                <label>ID Candidato Contralor:</label>
+                <input type="text" id="idContralor" placeholder="Ej: 5 (o 0 para blanco)" value="5">
+            </div>
+            <button onclick="testRegistrarVotos()">Ejecutar</button>
+            <div id="responseRegistrarVotos"></div>
+        </div>
+        
+        <!-- Test Obtener Consolidado -->
+        <div class="test-section">
+            <h2>4️⃣ Obtener Consolidado</h2>
+            <button onclick="testObtenerConsolidado()">Ejecutar</button>
+            <div id="responseObtenerConsolidado"></div>
+        </div>
+        
+        <!-- Debug Info -->
+        <div class="test-section">
+            <h2>🔍 Información de Debug</h2>
+            <button onclick="showDebugInfo()">Mostrar Info</button>
+            <div id="debugInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/sistema_votacion/Votaciones/api/';
+
+        async function testValidarVotante() {
+            const idVotante = document.getElementById('idVotante').value;
+            const responseDiv = document.getElementById('responseValidarVotante');
+            
+            try {
+                const response = await fetch(API_BASE + 'validar_votante.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_votante: idVotante })
+                });
+                
+                const data = await response.json();
+                displayResponse(responseDiv, data, response.status);
+            } catch (error) {
+                displayError(responseDiv, error);
+            }
+        }
+
+        async function testObtenerCandidatos() {
+            const responseDiv = document.getElementById('responseObtenerCandidatos');
+            
+            try {
+                const response = await fetch(API_BASE + 'obtener_candidatos.php', {
+                    method: 'GET'
+                });
+                
+                const data = await response.json();
+                displayResponse(responseDiv, data, response.status);
+            } catch (error) {
+                displayError(responseDiv, error);
+            }
+        }
+
+        async function testRegistrarVotos() {
+            const idVotante = document.getElementById('idVotanteRegistrar').value;
+            const idPersonero = parseInt(document.getElementById('idPersonero').value);
+            const idContralor = parseInt(document.getElementById('idContralor').value);
+            const responseDiv = document.getElementById('responseRegistrarVotos');
+            
+            try {
+                const response = await fetch(API_BASE + 'registrar_votos_completo.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_votante: idVotante,
+                        id_personero: idPersonero,
+                        id_contralor: idContralor
+                    })
+                });
+                
+                const data = await response.json();
+                displayResponse(responseDiv, data, response.status);
+            } catch (error) {
+                displayError(responseDiv, error);
+            }
+        }
+
+        async function testObtenerConsolidado() {
+            const responseDiv = document.getElementById('responseObtenerConsolidado');
+            
+            try {
+                const response = await fetch(API_BASE + 'obtener_consolidado.php', {
+                    method: 'GET'
+                });
+                
+                const data = await response.json();
+                displayResponse(responseDiv, data, response.status);
+            } catch (error) {
+                displayError(responseDiv, error);
+            }
+        }
+
+        function displayResponse(element, data, status) {
+            const isSuccess = status >= 200 && status < 300;
+            element.innerHTML = `
+                <div class="response ${isSuccess ? 'success' : 'error'}">
+                    <strong>Status: ${status}</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        function displayError(element, error) {
+            element.innerHTML = `
+                <div class="response error">
+                    <strong>Error:</strong>
+                    <pre>${error.message}</pre>
+                </div>
+            `;
+        }
+
+        function showDebugInfo() {
+            const info = `
+Base URL: ${window.location.origin}
+API Base: ${API_BASE}
+Path: ${window.location.pathname}
+Host: ${window.location.host}
+            `;
+            document.getElementById('debugInfo').innerHTML = `<pre>${info}</pre>`;
+        }
+    </script>
+</body>
+</html>

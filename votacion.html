@@ -4,9 +4,584 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Votación Estudiantil</title>
-    <link rel="stylesheet" href="Votaciones/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .banner-container {
+            width: 100%;
+            height: 80px;
+            overflow: hidden;
+            border-bottom: 3px solid #2e7d32;
+            margin-bottom: 30px;
+        }
+
+        .banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ÁREA DE VOTACIÓN */
+        .area-votacion {
+            max-width: 900px;
+            margin: 0 auto 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 3px solid #2e7d32;
+        }
+
+        .area-votacion h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        .codigo-input-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .codigo-input {
+            padding: 12px 18px;
+            border: 2px solid #2e7d32;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 280px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .codigo-input:focus {
+            border-color: #1b5e20;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        /* BOTONES */
+        .btn-verificar, .btn-votar, .btn-agregar, .btn-exportar, .btn-actualizar, .btn-volver, .btn-config, .btn-preliminares, .btn-reiniciar {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .btn-verificar:hover, .btn-votar:hover, .btn-agregar:hover, .btn-exportar:hover, .btn-actualizar:hover, .btn-volver:hover, .btn-config:hover, .btn-preliminares:hover {
+            background: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-reiniciar, .btn-cancelar {
+            background: #dc3545;
+        }
+
+        .btn-reiniciar:hover, .btn-cancelar:hover {
+            background: #c82333;
+        }
+
+        /* INFORMACIÓN DEL VOTANTE */
+        .votante-info {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .votante-nombre {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        }
+
+        /* CONTENEDOR DE VOTACIÓN */
+        .votacion-container {
+            display: grid;
+            gap: 25px;
+        }
+
+        .cargo-votacion {
+            background: #f9fef9;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .cargo-votacion h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .candidatos-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .candidato-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .candidato-option:hover {
+            border-color: #2e7d32;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+        }
+
+        .candidato-option input[type="radio"] {
+            accent-color: #2e7d32;
+        }
+
+        .candidato-option input[type="radio"]:checked + span {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .voto-blanco {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .voto-blanco:hover {
+            border-color: #2e7d32;
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+        }
+
+        .voto-blanco input[type="radio"] {
+            accent-color: #2e7d32;
+        }
+
+        .btn-votar {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+        }
+
+        /* BOTONES DE ACCESO */
+        .config-access {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .inicio-button {
+            background: white;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inicio-button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-config, .btn-preliminares {
+            background: white;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            border-radius: 50px;
+            padding: 12px 25px;
+            font-size: 14px;
+        }
+
+        .btn-config:hover, .btn-preliminares:hover {
+            background: #f0f0f0;
+        }
+
+        /* MODAL */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 3px solid #2e7d32;
+        }
+
+        .modal-content h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #2e7d32;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-cancelar {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancelar:hover {
+            background: #c82333;
+        }
+
+        /* ÁREA DE CONFIGURACIÓN */
+        .area-configuracion {
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 3px solid #2e7d32;
+        }
+
+        .area-configuracion h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .config-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #2e7d32;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: #f8f9fa;
+            color: #2e7d32;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-right: 1px solid #2e7d32;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-width: 150px;
+        }
+
+        .tab-btn:last-child {
+            border-right: none;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .tab-content {
+            min-height: 400px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* RESULTADOS PRELIMINARES */
+        .area-preliminares {
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border: 3px solid #2e7d32;
+        }
+
+        .area-preliminares h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle-preliminares {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .preliminares-container {
+            display: grid;
+            gap: 30px;
+        }
+
+        .resultado-cargo {
+            background: #f9fef9;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .resultado-cargo h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .resultado-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .resultado-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #2e7d32;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .candidato-nombre {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .votos-badge {
+            background: #2e7d32;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .resumen-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-top: 4px solid #2e7d32;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            display: block;
+            color: #2e7d32;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .preliminares-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        /* FOOTER */
+        .footer-container {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            color: white;
+            padding: 40px 20px;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h4 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-section p, .footer-section li {
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.9;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-section a:hover {
+            opacity: 0.7;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            padding-top: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .area-votacion, .area-configuracion, .area-preliminares {
+                padding: 20px;
+                margin: 0 10px 30px;
+            }
+
+            .candidatos-container {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+
+            .config-tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                min-width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #2e7d32;
+            }
+
+            .tab-btn:last-child {
+                border-bottom: none;
+            }
+
+            .codigo-input {
+                width: 100%;
+            }
+
+            .config-access {
+                left: 15px;
+                bottom: 15px;
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            .resumen-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="banner-container">
@@ -23,12 +598,12 @@
 
         <div id="votanteInfo" class="votante-info hidden">
             <div class="votante-nombre">
-                <span id="nombreVotante"></span>
+                Votante: <span id="nombreVotante"></span>
             </div>
             
             <div class="votacion-container">
                 <div class="cargo-votacion">
-                    <h3>Personero Estudiantil</h3>
+                    <h3>🎓 Personero Estudiantil</h3>
                     <div id="candidatosPersonero" class="candidatos-container"></div>
                     <label class="voto-blanco">
                         <input type="radio" name="personero" value="blanco">
@@ -37,7 +612,7 @@
                 </div>
 
                 <div class="cargo-votacion">
-                    <h3>Contralor Estudiantil</h3>
+                    <h3>⚖️ Contralor Estudiantil</h3>
                     <div id="candidatosContralor" class="candidatos-container"></div>
                     <label class="voto-blanco">
                         <input type="radio" name="contralor" value="blanco">
@@ -55,7 +630,7 @@
             <i class="fas fa-home"></i> Inicio
         </a>
         <button onclick="mostrarModalKey()" class="btn-config"><i class="fas fa-cog"></i> Configuración</button>
-        <button onclick="mostrarResultadosPreliminares()" class="btn-preliminares"><i class="fas fa-chart-bar"></i> Resultados Preliminares</button>
+        <button onclick="mostrarResultadosPreliminares()" class="btn-preliminares"><i class="fas fa-chart-bar"></i> Resultados</button>
     </div>
 
     <div id="modalKey" class="modal hidden">
@@ -73,76 +648,36 @@
         <h2>Panel de Configuración</h2>
         
         <div class="config-tabs">
-            <button class="tab-btn active" onclick="mostrarTab('votantes')">Gestionar Votantes</button>
-            <button class="tab-btn" onclick="mostrarTab('candidatos')">Gestionar Candidatos</button>
-            <button class="tab-btn" onclick="mostrarTab('sistema')">Configuración Sistema</button>
+            <button class="tab-btn active" onclick="mostrarTab('votantes')">Votantes</button>
+            <button class="tab-btn" onclick="mostrarTab('candidatos')">Candidatos</button>
+            <button class="tab-btn" onclick="mostrarTab('sistema')">Sistema</button>
             <button class="tab-btn" onclick="mostrarTab('resultados')">Resultados</button>
-            <button class="tab-btn" onclick="volverVotacion()">Volver a Votación</button>
+            <button class="tab-btn" onclick="volverVotacion()">Volver</button>
         </div>
 
         <div id="tabVotantes" class="tab-content">
-            <div class="file-upload">
-                <label for="archivoVotantes">Cargar archivo Excel de votantes:</label>
-                <input type="file" id="archivoVotantes" accept=".xlsx,.xls" onchange="cargarVotantes(this)" title="Seleccione un archivo Excel con la lista de votantes">
-            </div>
-            
-            <div class="agregar-votante">
-                <h3>Agregar Votante Individual</h3>
-                <div class="form-grid-simple">
-                    <input type="text" id="nuevoNombre" placeholder="Nombre completo" required>
-                    <input type="text" id="nuevoCodigo" placeholder="Código / Documento" required>
-                    <button onclick="agregarVotante()" class="btn-agregar">Agregar</button>
-                </div>
-            </div>
-
-            <div class="lista-votantes">
-                <h3>Lista de Votantes Registrados</h3>
-                <div id="listaVotantes"></div>
-            </div>
+            <h3>Gestión de Votantes</h3>
+            <p>Funcionalidad de gestión de votantes aquí.</p>
         </div>
 
         <div id="tabCandidatos" class="tab-content hidden">
-            <div class="candidatos-config">
-                <div class="cargo-config">
-                    <h3>Candidatos a Personero</h3>
-                    <div id="personeroConfig"></div>
-                    <button onclick="agregarCandidato('personero')" class="btn-agregar">+ Agregar Candidato</button>
-                </div>
-                
-                <div class="cargo-config">
-                    <h3>Candidatos a Contralor</h3>
-                    <div id="contralorConfig"></div>
-                    <button onclick="agregarCandidato('contralor')" class="btn-agregar">+ Agregar Candidato</button>
-                </div>
-            </div>
+            <h3>Gestión de Candidatos</h3>
+            <p>Funcionalidad de gestión de candidatos aquí.</p>
         </div>
 
         <div id="tabSistema" class="tab-content hidden">
-            <div class="sistema-config">
-                <h3>Configuración del Sistema</h3>
-                <div class="fecha-config">
-                    <h4>Fecha y Hora de Inicio de Votación</h4>
-                    <div class="form-grid-simple">
-                        <input type="datetime-local" id="fechaVotacion" placeholder="Fecha de votación">
-                        <button onclick="actualizarFechaVotacion()" class="btn-agregar">Actualizar Fecha</button>
-                    </div>
-                    <p class="info-text">Esta fecha se mostrará en el contador de la página principal</p>
-                </div>
-            </div>
+            <h3>Configuración del Sistema</h3>
+            <p>Configuración del sistema aquí.</p>
         </div>
 
         <div id="tabResultados" class="tab-content hidden">
-            <div class="resultados-container">
-                <h3>Resultados de la Votación</h3>
-                <div id="resumenResultados"></div>
-                <button onclick="exportarResultados()" class="btn-exportar">Exportar a Excel</button>
-                <button onclick="reiniciarVotacion()" class="btn-reiniciar">Reiniciar Votación</button>
-            </div>
+            <h3>Resultados Finales</h3>
+            <div id="resumenResultados"></div>
         </div>
     </div>
 
     <div id="preliminaresArea" class="area-preliminares hidden">
-        <h2>Resultados Preliminares</h2>
+        <h2>📊 Resultados Preliminares</h2>
         <p class="subtitle-preliminares">Resultados en tiempo real - Solo consulta</p>
         
         <div class="preliminares-container">
@@ -157,7 +692,7 @@
             </div>
             
             <div class="resultado-cargo">
-                <h3>📊 Resumen General</h3>
+                <h3>📈 Resumen General</h3>
                 <div id="resumenGeneralPreliminares"></div>
             </div>
         </div>
@@ -210,6 +745,6 @@
     </footer>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="Votaciones/script.js"></script>
+    <script src="Votaciones/script_votacion.js"></script>
 </body>
 </html>
