@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-03-2026 a las 21:07:32
+-- Tiempo de generación: 01-03-2026 a las 23:43:29
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -20,6 +20,27 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `votaciones`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `adminstrador`
+--
+
+CREATE TABLE `adminstrador` (
+  `id_administrador` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `usuario_admin` varchar(100) NOT NULL,
+  `password_admin` varchar(100) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish2_ci;
+
+--
+-- Volcado de datos para la tabla `adminstrador`
+--
+
+INSERT INTO `adminstrador` (`id_administrador`, `nombre`, `usuario_admin`, `password_admin`, `fecha`) VALUES
+(1, 'alber delfin peña ortigoza', 'rosa123', 'rosa123', '2026-03-01 22:42:39');
 
 -- --------------------------------------------------------
 
@@ -151,6 +172,12 @@ INSERT INTO `votos` (`id_voto`, `id_candidato`, `id_votante`, `es_blanco`, `valo
 --
 
 --
+-- Indices de la tabla `adminstrador`
+--
+ALTER TABLE `adminstrador`
+  ADD PRIMARY KEY (`id_administrador`);
+
+--
 -- Indices de la tabla `candidatos`
 --
 ALTER TABLE `candidatos`
@@ -185,6 +212,12 @@ ALTER TABLE `votos`
 --
 
 --
+-- AUTO_INCREMENT de la tabla `adminstrador`
+--
+ALTER TABLE `adminstrador`
+  MODIFY `id_administrador` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT de la tabla `candidatos`
 --
 ALTER TABLE `candidatos`
@@ -200,7 +233,7 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `votos`
 --
 ALTER TABLE `votos`
-  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
