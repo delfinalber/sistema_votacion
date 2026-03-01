@@ -1,14 +1,19 @@
 <?php
 include 'db.php';
 $data = json_decode(file_get_contents('php://input'), true);
-$codigo = $data['codigo'];
+$id_votante = $data['id_votante'];
+
+if (!$id_votante) {
+    echo json_encode(['success' => false, 'error' => 'ID de votante requerido']);
+    exit;
+}
 
 // Preparamos para eliminar de la tabla votantes (esto eliminará votos en cascada si está configurado)
-$stmt = $conn->prepare("DELETE FROM votantes WHERE codigo = ?");
-$stmt->bind_param("s", $codigo);
+$stmt = $conn->prepare("DELETE FROM votantes WHERE id_votante = ?");
+$stmt->bind_param("s", $id_votante);
 
 if ($stmt->execute()) {
-    echo json_encode(['success' => true]);
+    echo json_encode(['success' => true, 'message' => 'Votante eliminado correctamente']);
 } else {
     echo json_encode(['success' => false, 'error' => $stmt->error]);
 }

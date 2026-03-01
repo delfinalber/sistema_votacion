@@ -374,8 +374,304 @@
             min-height: 400px;
         }
 
-        .hidden {
-            display: none;
+        .file-upload {
+            background: #f9fef9;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #2e7d32;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .file-upload label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 500;
+            color: #2e7d32;
+        }
+
+        .file-upload input[type="file"] {
+            padding: 10px;
+            border: 1px solid #2e7d32;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #statusCarga {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .agregar-votante {
+            margin-bottom: 30px;
+        }
+
+        .agregar-votante h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .form-votante {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-votante input {
+            padding: 12px;
+            border: 2px solid #2e7d32;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-votante button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-votante button:hover {
+            background: #1b5e20;
+        }
+
+        .lista-votantes {
+            margin-top: 25px;
+        }
+
+        .lista-votantes h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .votante-item {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #2e7d32;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .votante-info {
+            flex: 1;
+        }
+
+        .votante-info strong {
+            display: block;
+            color: #333;
+        }
+
+        .votante-info small {
+            color: #666;
+        }
+
+        .btn-eliminar {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-eliminar:hover {
+            background: #c82333;
+        }
+
+        .candidatos-admin {
+            display: grid;
+            gap: 30px;
+        }
+
+        .cargo-config {
+            background: #f9fef9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .cargo-config h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .form-candidato {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-candidato input,
+        .form-candidato select {
+            padding: 10px;
+            border: 2px solid #2e7d32;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-candidato button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-candidato button:hover {
+            background: #1b5e20;
+        }
+
+        .candidato-item {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sistema-config {
+            background: #f9fef9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .sistema-config h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .sistema-config h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-sistema {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+        }
+
+        .form-sistema input {
+            padding: 12px;
+            border: 2px solid #2e7d32;
+            border-radius: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-sistema button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .form-sistema button:hover {
+            background: #1b5e20;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .resultados-admin {
+            background: #f9fef9;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .resultados-admin h3 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .resultado-cargo-admin {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .resultado-cargo-admin h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .resultado-item-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .resultado-item-admin:last-child {
+            border-bottom: none;
+        }
+
+        .votos-count {
+            background: #2e7d32;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .botones-resultados {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-exportar, .btn-reiniciar {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .btn-exportar {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-exportar:hover {
+            background: #1b5e20;
+        }
+
+        .btn-reiniciar {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-reiniciar:hover {
+            background: #c82333;
         }
 
         /* RESULTADOS PRELIMINARES */
@@ -656,23 +952,76 @@
         </div>
 
         <div id="tabVotantes" class="tab-content">
-            <h3>Gestión de Votantes</h3>
-            <p>Funcionalidad de gestión de votantes aquí.</p>
+            <div class="file-upload">
+                <label>📁 Cargar archivo Excel de votantes:</label>
+                <input type="file" id="archivoVotantes" accept=".xlsx,.xls" onchange="cargarVotantesExcel(this)">
+                <p id="statusCarga"></p>
+            </div>
+            
+            <div class="agregar-votante">
+                <h3>👤 Agregar Votante Individual</h3>
+                <div class="form-votante">
+                    <input type="text" id="nuevoNombreVotante" placeholder="Nombre completo" required>
+                    <input type="text" id="nuevoCódigoVotante" placeholder="Código / Documento" required>
+                    <button onclick="agregarVotanteIndividual()" class="btn-agregar">Agregar</button>
+                </div>
+            </div>
+
+            <div class="lista-votantes">
+                <h3>📋 Lista de Votantes Registrados</h3>
+                <div id="listaVotantesDiv"></div>
+            </div>
         </div>
 
         <div id="tabCandidatos" class="tab-content hidden">
-            <h3>Gestión de Candidatos</h3>
-            <p>Funcionalidad de gestión de candidatos aquí.</p>
+            <div class="candidatos-admin">
+                <div class="cargo-config">
+                    <h3>🎓 Candidatos a Personero</h3>
+                    <div class="form-candidato">
+                        <input type="text" id="nombrePersonero" placeholder="Nombre del candidato">
+                        <input type="number" id="numeroPersonero" placeholder="Número" min="1">
+                        <input type="file" id="fotoPersonero" accept="image/*">
+                        <button onclick="agregarCandidatoPersonero()" class="btn-agregar">Agregar</button>
+                    </div>
+                    <div id="listaPersoneros"></div>
+                </div>
+                
+                <div class="cargo-config">
+                    <h3>⚖️ Candidatos a Contralor</h3>
+                    <div class="form-candidato">
+                        <input type="text" id="nombreContralor" placeholder="Nombre del candidato">
+                        <input type="number" id="numeroContralor" placeholder="Número" min="1">
+                        <input type="file" id="fotoContralor" accept="image/*">
+                        <button onclick="agregarCandidatoContralor()" class="btn-agregar">Agregar</button>
+                    </div>
+                    <div id="listaContralores"></div>
+                </div>
+            </div>
         </div>
 
         <div id="tabSistema" class="tab-content hidden">
-            <h3>Configuración del Sistema</h3>
-            <p>Configuración del sistema aquí.</p>
+            <div class="sistema-config">
+                <h3>⚙️ Configuración del Sistema</h3>
+                <div class="fecha-config">
+                    <h4>📅 Fecha y Hora de Inicio de Votación</h4>
+                    <div class="form-sistema">
+                        <input type="datetime-local" id="fechaVotacionInput">
+                        <button onclick="actualizarFechaVotacion()" class="btn-agregar">Actualizar Fecha</button>
+                    </div>
+                    <p class="info-text">Esta fecha se mostrará en el contador de la página principal</p>
+                </div>
+            </div>
         </div>
 
         <div id="tabResultados" class="tab-content hidden">
-            <h3>Resultados Finales</h3>
-            <div id="resumenResultados"></div>
+            <div class="resultados-admin">
+                <h3>📊 Resultados de la Votación</h3>
+                <div id="resumenResultados"></div>
+                <div class="botones-resultados">
+                    <button onclick="exportarResultadosExcel()" class="btn-exportar">📥 Exportar a Excel</button>
+                    <button onclick="reiniciarVotacionSistema()" class="btn-reiniciar">🔄 Reiniciar Votación</button>
+                </div>
+            </div>
         </div>
     </div>
 

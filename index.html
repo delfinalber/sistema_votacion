@@ -569,6 +569,13 @@
             display: block;
         }
 
+        .modal-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+            display: block;
+        }
+
         .modal-message.loading {
             background: #e3f2fd;
             color: #1565c0;
@@ -836,9 +843,37 @@
         🏠 Inicio
     </a>
 
-    <button class="config-button">
+    <button class="config-button" onclick="abrirModalConfiguracion()">
         ⚙️ Configuración
     </button>
+
+    <!-- MODAL DE ACCESO A CONFIGURACIÓN -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🔐 Acceso a Configuración</h2>
+                <p class="modal-subtitle">Ingresa la clave de administrador</p>
+            </div>
+
+            <form id="formConfiguracion" onsubmit="validarConfiguracion(event)">
+                <div id="configMessage" class="modal-message"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Clave de Administrador</label>
+                    <input type="password" id="inputConfigKey" class="form-input" placeholder="Ingresa la clave" required>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-modal btn-acceder">
+                        ✓ Acceder
+                    </button>
+                    <button type="button" class="btn-modal btn-cerrar" onclick="cerrarModalConfiguracion()">
+                        ✕ Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // ======================================
@@ -853,10 +888,22 @@
         const formAutenticacion = document.getElementById('formAutenticacion');
         const btnAcceder = document.getElementById('btnAcceder');
         const votingButton = document.getElementById('votingButton');
+        const configModal = document.getElementById('configModal');
+        const inputConfigKey = document.getElementById('inputConfigKey');
+        const formConfiguracion = document.getElementById('formConfiguracion');
 
         // ======================================
         // LIMPIAR CAMPOS MIENTRAS SE ESCRIBE
         // ======================================
+        inputConfigKey.addEventListener('input', function() {
+            limpiarMensajeConfiguracion();
+        });
+
+        function limpiarMensajeConfiguracion() {
+            const configMessage = document.getElementById('configMessage');
+            configMessage.className = 'modal-message';
+            configMessage.textContent = '';
+        }
         inputUsuario.addEventListener('input', function() {
             limpiarMensajeError();
             inputPassword.value = '';
@@ -928,6 +975,69 @@
         function mostrarModal() {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+        }
+
+        // ======================================
+        // ABRIR MODAL DE CONFIGURACIÓN
+        // ======================================
+        function abrirModalConfiguracion() {
+            inputConfigKey.value = '';
+            limpiarMensajeConfiguracion();
+            configModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            inputConfigKey.focus();
+        }
+
+        // ======================================
+        // CERRAR MODAL DE CONFIGURACIÓN
+        // ======================================
+        function cerrarModalConfiguracion() {
+            configModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            inputConfigKey.value = '';
+            limpiarMensajeConfiguracion();
+        }
+
+        // ======================================
+        // VALIDAR CONFIGURACIÓN
+        // ======================================
+        function validarConfiguracion(event) {
+            event.preventDefault();
+
+            const clave = inputConfigKey.value.trim();
+            const configMessage = document.getElementById('configMessage');
+            const btnAcceder = document.querySelector('#formConfiguracion .btn-acceder');
+
+            // Validar que la clave no esté vacía
+            if (!clave) {
+                configMessage.className = 'modal-message error';
+                configMessage.textContent = '✗ Por favor ingresa la clave';
+                return;
+            }
+
+            // Deshabilitar botón de envío
+            btnAcceder.disabled = true;
+
+            // Validar clave correcta: admin123
+            if (clave === 'admin123') {
+                configMessage.className = 'modal-message success';
+                configMessage.textContent = '✓ Clave correcta - Redirigiendo...';
+
+                // Guardar sesión de autenticación
+                sessionStorage.setItem('autenticado', 'true');
+
+                // Redirigir a votacion.html
+                setTimeout(() => {
+                    window.location.href = 'votacion.html';
+                }, 800);
+            } else {
+                // Clave incorrecta
+                btnAcceder.disabled = false;
+                configMessage.className = 'modal-message error';
+                configMessage.textContent = '✗ Clave incorrecta';
+                inputConfigKey.value = '';
+                inputConfigKey.focus();
+            }
         }
 
         // ======================================
@@ -1085,6 +1195,29 @@
         btnCerrar.addEventListener('click', function() {
             clearInterval(timerModalInterval);
             cerrarModal();
+        });
+
+        // ======================================
+        // CERRAR MODAL DE CONFIGURACIÓN AL HACER CLIC FUERA
+        // ======================================
+        document.addEventListener('click', function(event) {
+            if (event.target === configModal) {
+                cerrarModalConfiguracion();
+            }
+        });
+
+        // ======================================
+        // CERRAR MODAL CON TECLA ESCAPE
+        // ======================================
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (configModal.classList.contains('active')) {
+                    cerrarModalConfiguracion();
+                }
+                if (modal.classList.contains('active')) {
+                    cerrarModal();
+                }
+            }
         });
 
         // ======================================

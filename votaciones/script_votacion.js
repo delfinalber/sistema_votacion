@@ -8,22 +8,54 @@ let candidatos = {
 };
 
 // ======================================
-// CARGAR CANDIDATOS AL INICIAR
+// CARGAR CANDIDATOS Y DATOS AL INICIAR
 // ======================================
 window.addEventListener('load', async function() {
-    // Verificar sesión
+    // Verificar sesión de administrador
     const autenticado = sessionStorage.getItem('autenticado');
-    if (!autenticado || autenticado !== 'true') {
-        alert('Acceso denegado. Debes autenticarte primero.');
-        window.location.href = 'index.html';
-        return;
-    }
-
-    try {
-        await cargarCandidatos();
-        console.log('Candidatos cargados correctamente');
-    } catch (error) {
-        console.error('Error al cargar candidatos:', error);
+    const configAccessDiv = document.querySelector('.config-access');
+    
+    if (autenticado && autenticado === 'true') {
+        // Usuario es administrador - mostrar panel de configuración
+        document.getElementById('votingArea').classList.add('hidden');
+        document.getElementById('preliminaresArea').classList.add('hidden');
+        document.getElementById('configArea').classList.remove('hidden');
+        document.getElementById('modalKey').classList.add('hidden');
+        
+        // Esconder botones de configuración (ya está en panel)
+        if (configAccessDiv) {
+            configAccessDiv.style.display = 'none';
+        }
+        
+        // Cargar datos del panel administrativo
+        try {
+            await cargarCandidatos();
+            await cargarVotantes();
+            await cargarCandidatosAdmin();
+            await cargarResultados();
+            console.log('Panel administrativo cargado correctamente');
+        } catch (error) {
+            console.error('Error al cargar datos administrativos:', error);
+        }
+    } else {
+        // Usuario regular - mostrar interfaz de votación
+        document.getElementById('configArea').classList.add('hidden');
+        document.getElementById('preliminaresArea').classList.add('hidden');
+        document.getElementById('votingArea').classList.remove('hidden');
+        document.getElementById('modalKey').classList.add('hidden');
+        
+        // Mostrar botones de configuración
+        if (configAccessDiv) {
+            configAccessDiv.style.display = 'flex';
+        }
+        
+        // Cargar solo candidatos para votación
+        try {
+            await cargarCandidatos();
+            console.log('Interfaz de votación cargada correctamente');
+        } catch (error) {
+            console.error('Error al cargar candidatos:', error);
+        }
     }
 });
 
@@ -45,6 +77,750 @@ async function cargarCandidatos() {
     } catch (error) {
         console.error('Error al cargar candidatos:', error);
     }
+}
+
+// ======================================
+// CARGAR VOTANTES PARA ADMIN
+// ======================================
+async function cargarVotantes() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarListaVotantes(data.votantes);
+        }
+    } catch (error) {
+        console.error('Error al cargar votantes:', error);
+    }
+}
+
+// ======================================
+// MOSTRAR LISTA DE VOTANTES
+// ======================================
+function mostrarListaVotantes(votantes) {
+    const listaDiv = document.getElementById('listaVotantesDiv');
+    listaDiv.innerHTML = '';
+
+    if (votantes.length === 0) {
+        listaDiv.innerHTML = '<p>No hay votantes registrados</p>';
+        return;
+    }
+
+    votantes.forEach(votante => {
+        const item = document.createElement('div');
+        item.className = 'votante-item';
+        item.innerHTML = `
+            <div class="votante-info">
+                <strong>${votante.nombre}</strong>
+                <small>Código: ${votante.id_votante}</small>
+            </div>
+            <button class="btn-eliminar" onclick="eliminarVotante('${votante.id_votante}')">Eliminar</button>
+        `;
+        listaDiv.appendChild(item);
+    });
+}
+
+// ======================================
+// AGREGAR VOTANTE INDIVIDUAL
+// ======================================
+async function agregarVotanteIndividual() {
+    const nombre = document.getElementById('nuevoNombreVotante').value.trim();
+    const codigo = document.getElementById('nuevoCódigoVotante').value.trim();
+
+    if (!nombre || !codigo) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_votante.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                codigo: codigo,
+                nombre: nombre
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Votante agregado correctamente');
+            document.getElementById('nuevoNombreVotante').value = '';
+            document.getElementById('nuevoCódigoVotante').value = '';
+            await cargarVotantes();
+        } else {
+            alert('Error: ' + (data.message || data.error || 'Error desconocido'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al agregar votante');
+    }
+}
+
+// ======================================
+// CARGAR VOTANTES DESDE EXCEL
+// ======================================
+async function cargarVotantesExcel(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const statusDiv = document.getElementById('statusCarga');
+    statusDiv.textContent = '⏳ Procesando archivo...';
+
+    try {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        let cargados = 0;
+        let errores = 0;
+
+        for (const row of jsonData) {
+            try {
+                const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_votante.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        codigo: row.codigo || row.Código || row.code || row.Code || row.id || row.Id,
+                        nombre: row.nombre || row.Nombre || row.name || row.Name
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    cargados++;
+                } else {
+                    errores++;
+                }
+            } catch (error) {
+                errores++;
+            }
+        }
+
+        statusDiv.className = cargados > 0 ? 'success' : 'error';
+        statusDiv.textContent = `✓ Cargados: ${cargados} | ✗ Errores: ${errores}`;
+        await cargarVotantes();
+        input.value = '';
+    } catch (error) {
+        statusDiv.className = 'error';
+        statusDiv.textContent = '✗ Error al procesar archivo';
+        console.error('Error:', error);
+    }
+}
+
+// ======================================
+// ELIMINAR VOTANTE
+// ======================================
+async function eliminarVotante(idVotante) {
+    if (!confirm('¿Eliminar este votante?')) return;
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_votante.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_votante: idVotante })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Votante eliminado');
+            await cargarVotantes();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar votante');
+    }
+}
+
+// ======================================
+// CARGAR CANDIDATOS PARA ADMIN
+// ======================================
+async function cargarCandidatosAdmin() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_candidatos.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarListaCandidatos('personeros', data.personeros);
+            mostrarListaCandidatos('contralores', data.contralores);
+        }
+    } catch (error) {
+        console.error('Error al cargar candidatos:', error);
+    }
+}
+
+// ======================================
+// MOSTRAR LISTA DE CANDIDATOS
+// ======================================
+function mostrarListaCandidatos(tipo, candidatos) {
+    const elementId = tipo === 'personeros' ? 'listaPersoneros' : 'listaContralores';
+    const containerDiv = document.getElementById(elementId);
+    containerDiv.innerHTML = '';
+
+    candidatos.forEach(candidato => {
+        const item = document.createElement('div');
+        item.className = 'candidato-item';
+        item.innerHTML = `
+            <div>
+                <strong>${candidato.nombre}</strong>
+                <br><small>Número: ${candidato.numero}</small>
+            </div>
+            <button class="btn-eliminar" onclick="eliminarCandidato(${candidato.id_candidato})">Eliminar</button>
+        `;
+        containerDiv.appendChild(item);
+    });
+}
+
+// ======================================
+// AGREGAR CANDIDATO PERSONERO
+// ======================================
+async function agregarCandidatoPersonero() {
+    await agregarCandidato('Personero');
+    document.getElementById('nombrePersonero').value = '';
+    document.getElementById('numeroPersonero').value = '';
+}
+
+// ======================================
+// AGREGAR CANDIDATO CONTRALOR
+// ======================================
+async function agregarCandidatoContralor() {
+    await agregarCandidato('Contralor');
+    document.getElementById('nombreContralor').value = '';
+    document.getElementById('numeroContralor').value = '';
+}
+
+// ======================================
+// AGREGAR CANDIDATO GENERAL
+// ======================================
+async function agregarCandidato(cargo) {
+    const nombre = cargo === 'Personero' 
+        ? document.getElementById('nombrePersonero').value.trim()
+        : document.getElementById('nombreContralor').value.trim();
+    const numero = cargo === 'Personero'
+        ? document.getElementById('numeroPersonero').value.trim()
+        : document.getElementById('numeroContralor').value.trim();
+
+    if (!nombre || !numero) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_candidato.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre: nombre,
+                numero: numero,
+                cargo: cargo
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Candidato agregado correctamente');
+            await cargarCandidatosAdmin();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al agregar candidato');
+    }
+}
+
+// ======================================
+// ELIMINAR CANDIDATO
+// ======================================
+async function eliminarCandidato(idCandidato) {
+    if (!confirm('¿Eliminar este candidato?')) return;
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_candidato.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_candidato: idCandidato })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Candidato eliminado');
+            await cargarCandidatosAdmin();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar candidato');
+    }
+}
+
+// ======================================
+// ACTUALIZAR FECHA DE VOTACIÓN
+// ======================================
+async function actualizarFechaVotacion() {
+    const fecha = document.getElementById('fechaVotacionInput').value;
+
+    if (!fecha) {
+        alert('Por favor selecciona una fecha');
+        return;
+    }
+
+    try {
+        localStorage.setItem('fechaVotacion', new Date(fecha).toISOString());
+        alert('✓ Fecha actualizada correctamente');
+    } catch (error) {
+        alert('Error al actualizar fecha');
+    }
+}
+
+// ======================================
+// CARGAR Y MOSTRAR RESULTADOS
+// ======================================
+async function cargarResultados() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarResultadosAdmin(data);
+        }
+    } catch (error) {
+        console.error('Error al cargar resultados:', error);
+    }
+}
+
+// ======================================
+// MOSTRAR RESULTADOS EN ADMIN
+// ======================================
+function mostrarResultadosAdmin(data) {
+    const resumenDiv = document.getElementById('resumenResultados');
+    let html = '';
+
+    // Personeros
+    html += '<div class="resultado-cargo-admin">';
+    html += '<h4>🎓 Resultados Personero Estudiantil</h4>';
+    data.personeros.forEach(p => {
+        html += `
+            <div class="resultado-item-admin">
+                <span>${p.nombre} (#${p.numero})</span>
+                <span class="votos-count">${p.total_votos} votos</span>
+            </div>
+        `;
+    });
+    if (data.votos_blanco_personero > 0) {
+        html += `
+            <div class="resultado-item-admin">
+                <span>Voto en Blanco</span>
+                <span class="votos-count">${data.votos_blanco_personero} votos</span>
+            </div>
+        `;
+    }
+    html += '</div>';
+
+    // Contralores
+    html += '<div class="resultado-cargo-admin">';
+    html += '<h4>⚖️ Resultados Contralor Estudiantil</h4>';
+    data.contralores.forEach(c => {
+        html += `
+            <div class="resultado-item-admin">
+                <span>${c.nombre} (#${c.numero})</span>
+                <span class="votos-count">${c.total_votos} votos</span>
+            </div>
+        `;
+    });
+    if (data.votos_blanco_contralor > 0) {
+        html += `
+            <div class="resultado-item-admin">
+                <span>Voto en Blanco</span>
+                <span class="votos-count">${data.votos_blanco_contralor} votos</span>
+            </div>
+        `;
+    }
+    html += '</div>';
+
+    // Resumen General
+    html += '<div class="resultado-cargo-admin">';
+    html += '<h4>📊 Resumen General</h4>';
+    html += `
+        <div class="resultado-item-admin">
+            <span>Total de votantes registrados</span>
+            <span class="votos-count">${data.total_registrados}</span>
+        </div>
+        <div class="resultado-item-admin">
+            <span>Total que votaron</span>
+            <span class="votos-count">${data.total_votaron}</span>
+        </div>
+        <div class="resultado-item-admin">
+            <span>Participación</span>
+            <span class="votos-count">${data.total_registrados > 0 ? Math.round((data.total_votaron / data.total_registrados) * 100) : 0}%</span>
+        </div>
+    `;
+    html += '</div>';
+
+    resumenDiv.innerHTML = html;
+}
+
+// ======================================
+// EXPORTAR RESULTADOS A EXCEL
+// ======================================
+async function exportarResultadosExcel() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            const datosExcel = [];
+
+            // Personeros
+            datosExcel.push(['PERSONERO ESTUDIANTIL']);
+            data.personeros.forEach(p => {
+                datosExcel.push([p.nombre, p.numero, p.total_votos]);
+            });
+            datosExcel.push(['Voto en Blanco', '', data.votos_blanco_personero]);
+            datosExcel.push([]);
+
+            // Contralores
+            datosExcel.push(['CONTRALOR ESTUDIANTIL']);
+            data.contralores.forEach(c => {
+                datosExcel.push([c.nombre, c.numero, c.total_votos]);
+            });
+            datosExcel.push(['Voto en Blanco', '', data.votos_blanco_contralor]);
+            datosExcel.push([]);
+
+            // Resumen
+            datosExcel.push(['RESUMEN GENERAL']);
+            datosExcel.push(['Total registrados', data.total_registrados]);
+            datosExcel.push(['Total votaron', data.total_votaron]);
+            datosExcel.push(['Participación', Math.round((data.total_votaron / data.total_registrados) * 100) + '%']);
+
+            const ws = XLSX.utils.aoa_to_sheet(datosExcel);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Resultados');
+            XLSX.writeFile(wb, 'Resultados_Votacion.xlsx');
+        }
+    } catch (error) {
+        alert('Error al exportar resultados');
+        console.error('Error:', error);
+    }
+}
+
+// ======================================
+// REINICIAR VOTACIÓN
+// ======================================
+async function reiniciarVotacionSistema() {
+    if (!confirm('⚠️ ¿Estás seguro? Esto eliminará todos los votos registrados.')) return;
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/reiniciar_votacion.php', {
+            method: 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Votación reiniciada correctamente');
+            await cargarResultados();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al reiniciar votación');
+        console.error('Error:', error);
+    }
+}
+
+// ======================================
+// VERIFICAR CÓDIGO DE VOTANTE
+// ======================================
+async function verificarCodigo() {
+    const codigo = document.getElementById('codigoVotante').value.trim();
+
+    if (!codigo) {
+        alert('Por favor ingresa tu código de votante');
+        return;
+    }
+
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/validar_votante.php';
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_votante: codigo })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            votanteActual = data.votante;
+            document.getElementById('nombreVotante').textContent = votanteActual.nombre;
+            document.getElementById('votanteInfo').classList.remove('hidden');
+            
+            // Cargar candidatos en la interfaz
+            cargarCandidatosInterfaz();
+        } else {
+            alert(data.message || 'Votante no encontrado o ya ha votado');
+            document.getElementById('codigoVotante').value = '';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al verificar el código');
+    }
+}
+
+// ======================================
+// CARGAR CANDIDATOS EN LA INTERFAZ
+// ======================================
+function cargarCandidatosInterfaz() {
+    // Personeros
+    const personeroContainer = document.getElementById('candidatosPersonero');
+    personeroContainer.innerHTML = '';
+    
+    candidatos.personeros.forEach(candidato => {
+        const label = document.createElement('label');
+        label.className = 'candidato-option';
+        label.innerHTML = `
+            <input type="radio" name="personero" value="${candidato.id_candidato}" data-nombre="${candidato.nombre}">
+            <span>${candidato.numero} - ${candidato.nombre}</span>
+        `;
+        personeroContainer.appendChild(label);
+    });
+
+    // Contralores
+    const contralorContainer = document.getElementById('candidatosContralor');
+    contralorContainer.innerHTML = '';
+    
+    candidatos.contralores.forEach(candidato => {
+        const label = document.createElement('label');
+        label.className = 'candidato-option';
+        label.innerHTML = `
+            <input type="radio" name="contralor" value="${candidato.id_candidato}" data-nombre="${candidato.nombre}">
+            <span>${candidato.numero} - ${candidato.nombre}</span>
+        `;
+        contralorContainer.appendChild(label);
+    });
+}
+
+// ======================================
+// ENVIAR VOTO
+// ======================================
+async function enviarVoto() {
+    if (!votanteActual) {
+        alert('Debes verificar tu código primero');
+        return;
+    }
+
+    const personeroRadios = document.querySelectorAll('input[name="personero"]:checked');
+    const contralorRadios = document.querySelectorAll('input[name="contralor"]:checked');
+
+    if (personeroRadios.length === 0 || contralorRadios.length === 0) {
+        alert('Debes seleccionar candidatos para ambos cargos');
+        return;
+    }
+
+    const idPersonero = personeroRadios[0].value === 'blanco' ? 0 : parseInt(personeroRadios[0].value);
+    const idContralor = contralorRadios[0].value === 'blanco' ? 0 : parseInt(contralorRadios[0].value);
+
+    try {
+        // Registrar ambos votos en una transacción
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/registrar_votos_completo.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_votante: votanteActual.id_votante,
+                id_personero: idPersonero,
+                id_contralor: idContralor
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            alert(data.message || 'Error al registrar el voto');
+            return;
+        }
+
+        alert('¡Voto registrado exitosamente!');
+        
+        // Limpiar interfaz
+        document.getElementById('codigoVotante').value = '';
+        document.getElementById('votanteInfo').classList.add('hidden');
+        document.getElementById('nombreVotante').textContent = '';
+        votanteActual = null;
+
+        // Mostrar resultados preliminares
+        setTimeout(() => {
+            mostrarResultadosPreliminares();
+        }, 1000);
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al enviar voto');
+    }
+}
+
+// ======================================
+// MOSTRAR RESULTADOS PRELIMINARES
+// ======================================
+async function mostrarResultadosPreliminares() {
+    document.getElementById('votingArea').classList.add('hidden');
+    document.getElementById('preliminaresArea').classList.remove('hidden');
+    await actualizarResultadosPreliminares();
+}
+
+// ======================================
+// ACTUALIZAR RESULTADOS PRELIMINARES
+// ======================================
+async function actualizarResultadosPreliminares() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success) {
+            mostrarResultados(data);
+        } else {
+            alert('Error al obtener resultados: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al cargar resultados');
+    }
+}
+
+// ======================================
+// MOSTRAR RESULTADOS EN LA INTERFAZ
+// ======================================
+function mostrarResultados(data) {
+    // Personeros
+    let htmlPersoneros = '<div class="resultado-lista">';
+    data.personeros.forEach(personero => {
+        htmlPersoneros += `
+            <div class="resultado-item">
+                <span class="candidato-nombre">${personero.nombre} (#${personero.numero})</span>
+                <span class="votos-badge">${personero.total_votos} votos</span>
+            </div>
+        `;
+    });
+    if (data.votos_blanco_personero > 0) {
+        htmlPersoneros += `
+            <div class="resultado-item">
+                <span class="candidato-nombre">Voto en Blanco</span>
+                <span class="votos-badge">${data.votos_blanco_personero} votos</span>
+            </div>
+        `;
+    }
+    htmlPersoneros += '</div>';
+    document.getElementById('resultadosPersoneroPreliminares').innerHTML = htmlPersoneros;
+
+    // Contralores
+    let htmlContralores = '<div class="resultado-lista">';
+    data.contralores.forEach(contralor => {
+        htmlContralores += `
+            <div class="resultado-item">
+                <span class="candidato-nombre">${contralor.nombre} (#${contralor.numero})</span>
+                <span class="votos-badge">${contralor.total_votos} votos</span>
+            </div>
+        `;
+    });
+    if (data.votos_blanco_contralor > 0) {
+        htmlContralores += `
+            <div class="resultado-item">
+                <span class="candidato-nombre">Voto en Blanco</span>
+                <span class="votos-badge">${data.votos_blanco_contralor} votos</span>
+            </div>
+        `;
+    }
+    htmlContralores += '</div>';
+    document.getElementById('resultadosContralorPreliminares').innerHTML = htmlContralores;
+
+    // Resumen General
+    const htmlResumen = `
+        <div class="resumen-stats">
+            <div class="stat-item">
+                <span class="stat-label">Total de Votantes Registrados</span>
+                <span class="stat-value">${data.total_registrados}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total que Votaron</span>
+                <span class="stat-value">${data.total_votaron}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Participación</span>
+                <span class="stat-value">${data.total_registrados > 0 ? Math.round((data.total_votaron / data.total_registrados) * 100) : 0}%</span>
+            </div>
+        </div>
+    `;
+    document.getElementById('resumenGeneralPreliminares').innerHTML = htmlResumen;
+}
+
+// ======================================
+// VOLVER A VOTACIÓN
+// ======================================
+function volverDesdePreliminares() {
+    document.getElementById('preliminaresArea').classList.add('hidden');
+    document.getElementById('votingArea').classList.remove('hidden');
+}
+
+// ======================================
+// VOLVER A VOTACIÓN DESDE CONFIGURACIÓN
+// ======================================
+function volverVotacion() {
+    document.getElementById('configArea').classList.add('hidden');
+    document.getElementById('votingArea').classList.remove('hidden');
+}
+
+// ======================================
+// MOSTRAR MODAL DE CONFIGURACIÓN
+// ======================================
+function mostrarModalKey() {
+    document.getElementById('modalKey').classList.remove('hidden');
+}
+
+function cerrarModalKey() {
+    document.getElementById('modalKey').classList.add('hidden');
+    document.getElementById('keyInput').value = '';
+}
+
+function verificarKey() {
+    const key = document.getElementById('keyInput').value;
+    if (key === 'admin123') {
+        document.getElementById('modalKey').classList.add('hidden');
+        document.getElementById('votingArea').classList.add('hidden');
+        document.getElementById('configArea').classList.remove('hidden');
+    } else {
+        alert('Clave incorrecta');
+    }
+}
+
+// ======================================
+// GESTIÓN DE TABS EN CONFIGURACIÓN
+// ======================================
+function mostrarTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.add('hidden'));
+    
+    const tabBtn = document.querySelectorAll('.tab-btn');
+    tabBtn.forEach(btn => btn.classList.remove('active'));
+    
+    const tab = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+    if (tab) {
+        tab.classList.remove('hidden');
+    }
+    
+    event.target.classList.add('active');
 }
 
 // ======================================
