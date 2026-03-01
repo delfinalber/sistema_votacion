@@ -187,6 +187,20 @@
             margin-top: 10px;
             font-size: 12px;
         }
+
+        .test-description {
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .test-section-warning {
+            background: #fce4ec;
+            border-left-color: #c2185b;
+        }
+
+        .test-section-warning h3 {
+            color: #c2185b;
+        }
     </style>
 </head>
 <body>
@@ -201,7 +215,7 @@
         <!-- Test 1: Credenciales Correctas -->
         <div class="test-section">
             <h3>1️⃣ Prueba con Credenciales Correctas</h3>
-            <p style="margin-bottom: 15px; color: #666;">Usuario: <strong>12345</strong> | Contraseña: <strong>delfin123456789</strong></p>
+            <p class="test-description">Usuario: <strong>12345</strong> | Contraseña: <strong>delfin123456789</strong></p>
             
             <div class="form-group">
                 <label>Usuario:</label>
@@ -220,7 +234,7 @@
         <!-- Test 2: Credenciales Incorrectas -->
         <div class="test-section">
             <h3>2️⃣ Prueba con Credenciales Incorrectas</h3>
-            <p style="margin-bottom: 15px; color: #666;">Esto debe mostrar error</p>
+            <p class="test-description">Esto debe mostrar error</p>
             
             <div class="form-group">
                 <label>Usuario:</label>
@@ -239,7 +253,7 @@
         <!-- Test 3: Campos Vacíos -->
         <div class="test-section">
             <h3>3️⃣ Prueba con Campos Vacíos</h3>
-            <p style="margin-bottom: 15px; color: #666;">Esto debe mostrar error</p>
+            <p class="test-description">Esto debe mostrar error</p>
             
             <button class="btn-primary" onclick="prueba3()">Validar Campos Vacíos</button>
             <div id="resultado3" class="result"></div>
@@ -248,7 +262,7 @@
         <!-- Test 4: Inyección SQL -->
         <div class="test-section">
             <h3>4️⃣ Prueba de Seguridad (Inyección SQL)</h3>
-            <p style="margin-bottom: 15px; color: #666;">Intento de SQL Injection - Debe ser rechazado</p>
+            <p class="test-description">Intento de SQL Injection - Debe ser rechazado</p>
             
             <div class="form-group">
                 <label>Usuario (con intento SQL):</label>
@@ -267,7 +281,7 @@
         <!-- Test 5: Custom -->
         <div class="test-section">
             <h3>5️⃣ Prueba Personalizada</h3>
-            <p style="margin-bottom: 15px; color: #666;">Ingresa tus propias credenciales</p>
+            <p class="test-description">Ingresa tus propias credenciales</p>
             
             <div class="form-group">
                 <label>Usuario:</label>
@@ -283,8 +297,8 @@
             <div id="resultadoCustom" class="result"></div>
         </div>
 
-        <div class="test-section" style="background: #fce4ec; border-left-color: #c2185b;">
-            <h3 style="color: #c2185b;">📋 Verificación Automática</h3>
+        <div class="test-section test-section-warning">
+            <h3>📋 Verificación Automática</h3>
             <ul class="test-list" id="testList">
                 <li>Estado del servidor: Pendiente...</li>
             </ul>
@@ -293,7 +307,7 @@
 
     <script>
         // URL del API
-        const API_URL = 'Votaciones/api/validar_sesion.php';
+        const API_URL = 'votaciones/api/validar_sesion.php';
 
         // Función genérica para pruebas
         async function validarCredenciales(usuario, password, resultadoId) {

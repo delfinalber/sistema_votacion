@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Rápido - API de Autenticación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: 2px solid #2e7d32;
+        }
+        h1 {
+            color: #2e7d32;
+            text-align: center;
+        }
+        .test-box {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2e7d32;
+        }
+        button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        button:hover {
+            background: #1b5e20;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+        .success {
+            background: #c8e6c9;
+            border-color: #2e7d32;
+            color: #1b5e20;
+        }
+        .error {
+            background: #ffcdd2;
+            border-color: #ef5350;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Test del API de Autenticación</h1>
+        
+        <div class="test-box">
+            <h3>Prueba 1: Credenciales Correctas</h3>
+            <p>Usuario: <strong>12345</strong> | Contraseña: <strong>delfin123456789</strong></p>
+            <button onclick="testAPI('12345', 'delfin123456789', 'result1')">Enviar Test</button>
+            <div id="result1" class="result"></div>
+        </div>
+
+        <div class="test-box">
+            <h3>Prueba 2: Credenciales Incorrectas</h3>
+            <p>Usuario: <strong>12345</strong> | Contraseña: <strong>incorrecta</strong></p>
+            <button onclick="testAPI('12345', 'incorrecta', 'result2')">Enviar Test</button>
+            <div id="result2" class="result"></div>
+        </div>
+
+        <div class="test-box">
+            <h3>Prueba 3: SQL Injection</h3>
+            <p>Usuario: <strong>12345 OR 1=1</strong></p>
+            <button onclick="testAPI('12345 OR 1=1', 'test', 'result3')">Enviar Test</button>
+            <div id="result3" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testAPI(usuario, password, resultId) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.textContent = '⏳ Probando...';
+            resultDiv.className = 'result';
+
+            try {
+                const response = await fetch('./Votaciones/api/validar_sesion.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario: usuario,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+                
+                // Mostrar respuesta completa
+                const resultado = {
+                    'Status HTTP': response.status,
+                    'Éxito': data.success,
+                    'Mensaje': data.message,
+                    'Usuario ID': data.usuario_id || 'N/A',
+                    'Usuario Nombre': data.usuario_nombre || 'N/A'
+                };
+
+                resultDiv.textContent = JSON.stringify(resultado, null, 2);
+                resultDiv.className = data.success ? 'result success' : 'result error';
+
+            } catch (error) {
+                resultDiv.textContent = '❌ Error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Test de conexión al cargar
+        window.addEventListener('load', async () => {
+            console.log('Verificando conexión al API...');
+            try {
+                const response = await fetch('./Votaciones/api/validar_sesion.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario: 'test',
+                        password: 'test'
+                    })
+                });
+                console.log('✓ API Conectado (Status: ' + response.status + ')');
+            } catch (error) {
+                console.error('✗ Error de conexión: ' + error.message);
+                alert('⚠️ Error: No se pudo conectar al API\n\nVerifica:\n1. El archivo ./Votaciones/api/validar_sesion.php existe\n2. PHP está habilitado\n3. La BD "votaciones" existe\n\nDetalles: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -722,9 +722,9 @@
                         </div>
                     </div>
                     <p class="election-date-text">Fecha de elección: 15 de abril de 2025</p>
-                    <a href="registrop.html" id="votingButton" class="voting-button disabled" onclick="return checkVotingEnabled()">
+                    <button id="votingButton" class="voting-button disabled" onclick="abrirModalVotacion()">
                         🗳️ Ir a Votar
-                    </a>
+                    </button>
                 </div>
 
                 <div class="info-section">
@@ -845,18 +845,80 @@
         // VARIABLES GLOBALES
         // ======================================
         let timerModalInterval;
-        let tiempoRestanteModal = 20;
+        let tiempoRestanteModal = 30;
         const modal = document.getElementById('authModal');
         const btnCerrar = document.getElementById('btnCerrar');
+        const inputUsuario = document.getElementById('inputUsuario');
+        const inputPassword = document.getElementById('inputPassword');
+        const formAutenticacion = document.getElementById('formAutenticacion');
+        const btnAcceder = document.getElementById('btnAcceder');
         const votingButton = document.getElementById('votingButton');
 
         // ======================================
-        // MOSTRAR MODAL AL CARGAR LA PÁGINA
+        // LIMPIAR CAMPOS MIENTRAS SE ESCRIBE
         // ======================================
-        window.addEventListener('load', function() {
+        inputUsuario.addEventListener('input', function() {
+            limpiarMensajeError();
+            inputPassword.value = '';
+        });
+
+        inputPassword.addEventListener('input', function() {
+            limpiarMensajeError();
+        });
+
+        function limpiarMensajeError() {
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.className = 'modal-message';
+            modalMessage.textContent = '';
+        }
+
+        // ======================================
+        // CARGAR FECHA DE VOTACIÓN
+        // ======================================
+        function obtenerFechaVotacion() {
+            const fechaGuardada = localStorage.getItem('fechaVotacion');
+            if (fechaGuardada) {
+                return new Date(fechaGuardada).getTime();
+            }
+            return new Date('2025-04-15T07:00:00').getTime();
+        }
+        
+        const votingDate = obtenerFechaVotacion();
+
+        // ======================================
+        // VERIFICAR SI ES TIEMPO DE VOTAR
+        // ======================================
+        function checkVotingEnabled() {
+            const now = new Date().getTime();
+            const distance = votingDate - now;
+            return distance < 0;
+        }
+
+        // ======================================
+        // ABRIR MODAL AL HACER CLICK EN "IR A VOTAR"
+        // ======================================
+        function abrirModalVotacion() {
+            // Verificar si es tiempo de votar
+            if (!checkVotingEnabled()) {
+                alert('La votación aún no ha comenzado. Por favor espera hasta la fecha indicada.');
+                return;
+            }
+
+            // Limpiar sesión previa si existe
+            sessionStorage.removeItem('autenticado');
+            sessionStorage.removeItem('usuario_id');
+            sessionStorage.removeItem('usuario_nombre');
+
+            // Limpiar formulario
+            limpiarFormulario();
+
+            // Mostrar modal
             mostrarModal();
             iniciarTimerModal();
-        });
+
+            // Enfocar el primer campo
+            inputUsuario.focus();
+        }
 
         // ======================================
         // MOSTRAR MODAL DE AUTENTICACIÓN
@@ -867,18 +929,49 @@
         }
 
         // ======================================
-        // CERRAR MODAL
+        // CERRAR MODAL SIN AUTENTICARSE
         // ======================================
         function cerrarModal() {
             modal.classList.remove('active');
             document.body.style.overflow = 'auto';
-            
-            // Limpiar historial y caché
-            limpiarCacheEHistorial();
-            
+
+            // Limpiar todos los datos del formulario
+            limpiarFormulario();
+
+            // Limpiar sesión
+            limpiarSesion();
+
             // Reiniciar timer
-            tiempoRestanteModal = 20;
+            tiempoRestanteModal = 30;
             document.getElementById('timerModal').textContent = tiempoRestanteModal;
+        }
+
+        // ======================================
+        // LIMPIAR FORMULARIO
+        // ======================================
+        function limpiarFormulario() {
+            formAutenticacion.reset();
+            limpiarMensajeError();
+            btnAcceder.disabled = false;
+        }
+
+        // ======================================
+        // LIMPIAR SESIÓN
+        // ======================================
+        function limpiarSesion() {
+            // Limpiar sessionStorage
+            sessionStorage.clear();
+
+            // Limpiar localStorage
+            localStorage.clear();
+
+            // Limpiar cookies de sesión
+            document.cookie.split(";").forEach(function(c) {
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
+            // Reemplazar el historial
+            window.history.replaceState(null, '', window.location.href);
         }
 
         // ======================================
@@ -886,11 +979,10 @@
         // ======================================
         async function validarSesion(event) {
             event.preventDefault();
-            
-            const usuario = document.getElementById('inputUsuario').value.trim();
-            const password = document.getElementById('inputPassword').value.trim();
+
+            const usuario = inputUsuario.value.trim();
+            const password = inputPassword.value.trim();
             const modalMessage = document.getElementById('modalMessage');
-            const btnAcceder = document.getElementById('btnAcceder');
 
             // Validar que no estén vacíos
             if (!usuario || !password) {
@@ -903,11 +995,12 @@
             mostrarMensaje('Verificando credenciales...', 'loading');
 
             try {
-                const response = await fetch('Votaciones/api/validar_sesion.php', {
+                const response = await fetch('./Votaciones/api/validar_sesion.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         usuario: usuario,
                         password: password
@@ -916,26 +1009,28 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    // Guardar información de sesión en sessionStorage (se borra al cerrar la pestaña)
+                if (response.ok && data.success) {
+                    // Autenticación exitosa
                     sessionStorage.setItem('usuario_id', data.usuario_id);
                     sessionStorage.setItem('usuario_nombre', data.usuario_nombre);
                     sessionStorage.setItem('autenticado', 'true');
-                    
+
                     // Detener el timer del modal
                     clearInterval(timerModalInterval);
-                    
-                    // Limpiar formulario
-                    document.getElementById('formAutenticacion').reset();
-                    
-                    // Redirigir a registrop.html
+
+                    // Mostrar mensaje de éxito
+                    mostrarMensaje('¡Autenticación exitosa! Redirigiendo...', 'loading');
+
+                    // Redirigir a registrop.html después de 500ms
                     setTimeout(() => {
                         window.location.href = 'registrop.html';
                     }, 500);
                 } else {
+                    // Credenciales inválidas
                     btnAcceder.disabled = false;
-                    mostrarMensaje(data.message || 'Credenciales inválidas', 'error');
-                    document.getElementById('inputPassword').value = '';
+                    mostrarMensaje(data.message || 'Usuario o contraseña incorrectos', 'error');
+                    inputPassword.value = '';
+                    inputPassword.focus();
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -951,27 +1046,29 @@
             const modalMessage = document.getElementById('modalMessage');
             modalMessage.textContent = texto;
             modalMessage.className = 'modal-message ' + tipo;
-            
-            // Auto-limpiar si es error (después de 5 segundos)
+
+            // Auto-limpiar si es error (después de 4 segundos)
             if (tipo === 'error') {
                 setTimeout(() => {
-                    modalMessage.className = 'modal-message';
-                    modalMessage.textContent = '';
-                }, 5000);
+                    if (modalMessage.className.includes('error')) {
+                        modalMessage.className = 'modal-message';
+                        modalMessage.textContent = '';
+                    }
+                }, 4000);
             }
         }
 
         // ======================================
-        // TIMER AUTOMÁTICO DEL MODAL (20 SEGUNDOS)
+        // TIMER AUTOMÁTICO DEL MODAL (30 SEGUNDOS)
         // ======================================
         function iniciarTimerModal() {
-            tiempoRestanteModal = 20;
+            tiempoRestanteModal = 30;
             document.getElementById('timerModal').textContent = tiempoRestanteModal;
-            
+
             timerModalInterval = setInterval(() => {
                 tiempoRestanteModal--;
                 document.getElementById('timerModal').textContent = tiempoRestanteModal;
-                
+
                 if (tiempoRestanteModal <= 0) {
                     clearInterval(timerModalInterval);
                     cerrarModal();
@@ -988,34 +1085,8 @@
         });
 
         // ======================================
-        // LIMPIAR CACHÉ E HISTORIAL
+        // COUNTDOWN DE VOTACIÓN
         // ======================================
-        function limpiarCacheEHistorial() {
-            // Limpiar sessionStorage (datos de sesión)
-            sessionStorage.clear();
-            
-            // Limpiar localStorage (opcional, según requieras)
-            // localStorage.clear();
-            
-            // Reemplazar el historial para que no se pueda volver atrás
-            window.history.replaceState(null, '', window.location.href);
-        }
-
-        // ======================================
-        // COUNTDOWN DE VOTACIÓN (CÓDIGO ORIGINAL)
-        // ======================================
-        // Cargar fecha de votación desde localStorage o usar fecha por defecto
-        function obtenerFechaVotacion() {
-            const fechaGuardada = localStorage.getItem('fechaVotacion');
-            if (fechaGuardada) {
-                return new Date(fechaGuardada).getTime();
-            }
-            // Fecha por defecto si no hay ninguna guardada
-            return new Date('2025-04-15T07:00:00').getTime();
-        }
-        
-        const votingDate = obtenerFechaVotacion();
-
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = votingDate - now;
@@ -1027,7 +1098,7 @@
                 document.getElementById('minutes').textContent = '00';
                 document.getElementById('seconds').textContent = '00';
                 document.querySelector('.timer-subtitle').textContent = '¡Las elecciones han comenzado!';
-                
+
                 // Habilitar el botón de votación
                 votingButton.classList.remove('disabled');
                 votingButton.style.animation = 'pulse 2s infinite';
@@ -1043,17 +1114,6 @@
             document.getElementById('hours').textContent = String(hours).padStart(2, '0');
             document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
             document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-        }
-
-        function checkVotingEnabled() {
-            const now = new Date().getTime();
-            const distance = votingDate - now;
-            
-            if (distance >= 0) {
-                alert('La votación aún no ha comenzado. Por favor espera hasta la fecha indicada.');
-                return false;
-            }
-            return true;
         }
 
         // Actualizar el contador cada segundo

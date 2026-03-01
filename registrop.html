@@ -111,46 +111,39 @@
             // Verificar si el usuario está autenticado
             const autenticado = sessionStorage.getItem('autenticado');
             
-            if (!autenticado) {
+            if (!autenticado || autenticado !== 'true') {
                 // Si no está autenticado, regresar a index.html
-                alert('Acceso denegado. Por favor, autentícate primero.');
+                console.warn('Acceso denegado: No hay sesión activa');
                 window.location.href = 'index.html';
                 return;
             }
 
-            // Limpiar caché e historial después de acceder
-            limpiarCacheYHistorial();
+            console.log('Sesión activa - Usuario: ' + sessionStorage.getItem('usuario_nombre'));
+
+            // Proteger contra cierre de sesión accidental
+            protegerContraNavegacionAtrás();
         });
 
         // ======================================
-        // LIMPIAR CACHÉ E HISTORIAL
+        // PROTEGER CONTRA NAVEGACIÓN HACIA ATRÁS
         // ======================================
-        function limpiarCacheYHistorial() {
-            // Prevenir ir atrás en el navegador
-            window.history.replaceState(null, '', window.location.href);
+        function protegerContraNavegacionAtrás() {
+            // Reemplazar el estado del historial
+            window.history.replaceState({authenticated: true}, '', window.location.href);
             
-            // Desabilitar botón atrás del navegador
-            window.history.pushState(null, '', window.location.href);
-            window.onpopstate = function() {
-                window.history.pushState(null, '', window.location.href);
-            };
-
-            // Limpiar caché del navegador (si es posible)
-            if (navigator.serviceWorker) {
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    for (let registration of registrations) {
-                        registration.unregister();
-                    }
-                });
-            }
-
-            // Desabilitar tecla atrás (Alt+Izquierda en algunos navegadores)
-            document.addEventListener('keydown', function(event) {
-                if ((event.altKey || event.metaKey) && event.key === 'ArrowLeft') {
-                    event.preventDefault();
-                }
+            // Prevenir ir hacia atrás
+            window.addEventListener('popstate', function(event) {
+                window.history.pushState({authenticated: true}, '', window.location.href);
             });
         }
+
+        // ======================================
+        // LIMPIAR SESIÓN AL SALIR
+        // ======================================
+        window.addEventListener('beforeunload', function() {
+            // Opcional: ejecutar limpieza antes de cerrar
+            // console.log('Limpiando sesión...');
+        });
 
         // ======================================
         // MANEJO DEL FORMULARIO
@@ -171,17 +164,11 @@
                 }
             };
 
+            // Guardar en sessionStorage (se borra al cerrar la pestaña)
             sessionStorage.setItem('datosAdministrador', JSON.stringify(datosAdmin));
 
+            // Redirigir a votacion.html
             window.location.href = 'votacion.html';
-        });
-
-        // ======================================
-        // PROTEGER CONTRA CIERRE DE SESIÓN ACCIDENTAL
-        // ======================================
-        window.addEventListener('beforeunload', function(event) {
-            // Opcional: mostrar confirmación si intenta salir sin guardar
-            // return event.returnValue = 'Los cambios no guardados se perderán';
         });
     </script>
 
