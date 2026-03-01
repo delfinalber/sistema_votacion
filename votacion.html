@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votación Estudiantil</title>
+    <link rel="stylesheet" href="Votaciones/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="banner-container">
+        <img src="Votaciones/Img/baner.png" alt="Banner Institucional" class="banner-img">
+    </div>
+
+    <div id="votingArea" class="area-votacion">
+        <h2>Sistema de Votación Estudiantil</h2>
+        
+        <div class="codigo-input-container">
+            <input type="text" id="codigoVotante" placeholder="Ingrese su código de votante" class="codigo-input">
+            <button onclick="verificarCodigo()" class="btn-verificar">Verificar</button>
+        </div>
+
+        <div id="votanteInfo" class="votante-info hidden">
+            <div class="votante-nombre">
+                <span id="nombreVotante"></span>
+            </div>
+            
+            <div class="votacion-container">
+                <div class="cargo-votacion">
+                    <h3>Personero Estudiantil</h3>
+                    <div id="candidatosPersonero" class="candidatos-container"></div>
+                    <label class="voto-blanco">
+                        <input type="radio" name="personero" value="blanco">
+                        <span>Voto en Blanco</span>
+                    </label>
+                </div>
+
+                <div class="cargo-votacion">
+                    <h3>Contralor Estudiantil</h3>
+                    <div id="candidatosContralor" class="candidatos-container"></div>
+                    <label class="voto-blanco">
+                        <input type="radio" name="contralor" value="blanco">
+                        <span>Voto en Blanco</span>
+                    </label>
+                </div>
+
+                <button onclick="enviarVoto()" class="btn-votar">Enviar Voto</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="config-access">
+        <a href="http://tecnicosuperiorneiva.com.co" target="_blank" class="inicio-button">
+            <i class="fas fa-home"></i> Inicio
+        </a>
+        <button onclick="mostrarModalKey()" class="btn-config"><i class="fas fa-cog"></i> Configuración</button>
+        <button onclick="mostrarResultadosPreliminares()" class="btn-preliminares"><i class="fas fa-chart-bar"></i> Resultados Preliminares</button>
+    </div>
+
+    <div id="modalKey" class="modal hidden">
+        <div class="modal-content">
+            <h3>Acceso a Configuración</h3>
+            <input type="password" id="keyInput" placeholder="Ingrese la clave de acceso">
+            <div class="modal-buttons">
+                <button onclick="verificarKey()" class="btn-verificar">Verificar</button>
+                <button onclick="cerrarModalKey()" class="btn-cancelar">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="configArea" class="area-configuracion hidden">
+        <h2>Panel de Configuración</h2>
+        
+        <div class="config-tabs">
+            <button class="tab-btn active" onclick="mostrarTab('votantes')">Gestionar Votantes</button>
+            <button class="tab-btn" onclick="mostrarTab('candidatos')">Gestionar Candidatos</button>
+            <button class="tab-btn" onclick="mostrarTab('sistema')">Configuración Sistema</button>
+            <button class="tab-btn" onclick="mostrarTab('resultados')">Resultados</button>
+            <button class="tab-btn" onclick="volverVotacion()">Volver a Votación</button>
+        </div>
+
+        <div id="tabVotantes" class="tab-content">
+            <div class="file-upload">
+                <label for="archivoVotantes">Cargar archivo Excel de votantes:</label>
+                <input type="file" id="archivoVotantes" accept=".xlsx,.xls" onchange="cargarVotantes(this)" title="Seleccione un archivo Excel con la lista de votantes">
+            </div>
+            
+            <div class="agregar-votante">
+                <h3>Agregar Votante Individual</h3>
+                <div class="form-grid-simple">
+                    <input type="text" id="nuevoNombre" placeholder="Nombre completo" required>
+                    <input type="text" id="nuevoCodigo" placeholder="Código / Documento" required>
+                    <button onclick="agregarVotante()" class="btn-agregar">Agregar</button>
+                </div>
+            </div>
+
+            <div class="lista-votantes">
+                <h3>Lista de Votantes Registrados</h3>
+                <div id="listaVotantes"></div>
+            </div>
+        </div>
+
+        <div id="tabCandidatos" class="tab-content hidden">
+            <div class="candidatos-config">
+                <div class="cargo-config">
+                    <h3>Candidatos a Personero</h3>
+                    <div id="personeroConfig"></div>
+                    <button onclick="agregarCandidato('personero')" class="btn-agregar">+ Agregar Candidato</button>
+                </div>
+                
+                <div class="cargo-config">
+                    <h3>Candidatos a Contralor</h3>
+                    <div id="contralorConfig"></div>
+                    <button onclick="agregarCandidato('contralor')" class="btn-agregar">+ Agregar Candidato</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabSistema" class="tab-content hidden">
+            <div class="sistema-config">
+                <h3>Configuración del Sistema</h3>
+                <div class="fecha-config">
+                    <h4>Fecha y Hora de Inicio de Votación</h4>
+                    <div class="form-grid-simple">
+                        <input type="datetime-local" id="fechaVotacion" placeholder="Fecha de votación">
+                        <button onclick="actualizarFechaVotacion()" class="btn-agregar">Actualizar Fecha</button>
+                    </div>
+                    <p class="info-text">Esta fecha se mostrará en el contador de la página principal</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabResultados" class="tab-content hidden">
+            <div class="resultados-container">
+                <h3>Resultados de la Votación</h3>
+                <div id="resumenResultados"></div>
+                <button onclick="exportarResultados()" class="btn-exportar">Exportar a Excel</button>
+                <button onclick="reiniciarVotacion()" class="btn-reiniciar">Reiniciar Votación</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preliminaresArea" class="area-preliminares hidden">
+        <h2>Resultados Preliminares</h2>
+        <p class="subtitle-preliminares">Resultados en tiempo real - Solo consulta</p>
+        
+        <div class="preliminares-container">
+            <div class="resultado-cargo">
+                <h3>🎓 Personero Estudiantil</h3>
+                <div id="resultadosPersoneroPreliminares"></div>
+            </div>
+            
+            <div class="resultado-cargo">
+                <h3>⚖️ Contralor Estudiantil</h3>
+                <div id="resultadosContralorPreliminares"></div>
+            </div>
+            
+            <div class="resultado-cargo">
+                <h3>📊 Resumen General</h3>
+                <div id="resumenGeneralPreliminares"></div>
+            </div>
+        </div>
+        
+        <div class="preliminares-buttons">
+            <button onclick="actualizarResultadosPreliminares()" class="btn-actualizar">🔄 Actualizar</button>
+            <button onclick="volverDesdePreliminares()" class="btn-volver">← Volver a Votar</button>
+        </div>
+    </div>
+
+    <footer class="footer-container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4><i class="fas fa-university"></i> Institución Educativa</h4>
+                <p><i class="fas fa-map-marker-alt"></i> Carrera 15 # 12-34, Neiva - Huila</p>
+                <p><i class="fas fa-phone"></i> Teléfono: (8) 871-2345</p>
+                <p><i class="fas fa-envelope"></i> Email: info@institucion.edu.co</p>
+                <p><i class="fas fa-globe"></i> Web: www.institucion.edu.co</p>
+                <p><i class="fas fa-history"></i> Fundada en 1934 - 90 años de tradición</p>
+            </div>
+            <div class="footer-section">
+                <h4><i class="fas fa-link"></i> Enlaces Útiles</h4>
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i> Página Principal</a></li>
+                    <li><a href="#"><i class="fas fa-gavel"></i> Reglamento Electoral</a></li>
+                    <li><a href="#"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                    <li><a href="#"><i class="fas fa-headset"></i> Soporte Técnico</a></li>
+                    <li><a href="#"><i class="fas fa-file-alt"></i> Documentos</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4><i class="fas fa-clock"></i> Horarios de Votación</h4>
+                <p><i class="fas fa-calendar-day"></i> Lunes a Viernes: 7:00 AM - 4:00 PM</p>
+                <p><i class="fas fa-calendar-check"></i> Días de Elección: 15-18 de Abril 2024</p>
+                <p><i class="fas fa-users"></i> Participación: Grados 9° a 11°</p>
+                <p><i class="fas fa-shield-alt"></i> Sistema 100% Seguro</p>
+            </div>
+            <div class="footer-section">
+                <h4><i class="fas fa-vote-yea"></i> Sistema de Votación</h4>
+                <p>Plataforma digital segura y confiable para las elecciones estudiantiles.</p>
+                <p><i class="fas fa-microchip"></i> Tecnología de vanguardia para garantizar transparencia y participación democrática.</p>
+                <p><i class="fas fa-lock"></i> Encriptación de extremo a extremo</p>
+                <p><i class="fas fa-chart-line"></i> Resultados en tiempo real</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p><i class="fas fa-vote-yea"></i> Sistema de Votación Estudiantil</p>
+            <p>&copy; 2024 Institución Educativa Técnico Superior Neiva. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="Votaciones/script.js"></script>
+</body>
+</html>

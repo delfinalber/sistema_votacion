@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votación Estudiantil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            width: 100%;
+            height: 80px;
+            overflow: hidden;
+            border-bottom: 3px solid #2e7d32;
+        }
+
+        .header img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .content-wrapper {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 3px solid #2e7d32;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 500px;
+        }
+
+        .timer-section {
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .timer-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .timer-subtitle {
+            font-size: 18px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .time-box {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 100px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .time-value {
+            font-size: 48px;
+            font-weight: bold;
+            display: block;
+            line-height: 1;
+        }
+
+        .time-label {
+            font-size: 14px;
+            margin-top: 10px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .voting-button {
+            background: white;
+            color: #2e7d32;
+            padding: 18px 40px;
+            border-radius: 50px;
+            border: 3px solid white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .voting-button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .voting-button.disabled {
+            background: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .voting-button.disabled:hover {
+            transform: none;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .info-section {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .info-title {
+            color: #2e7d32;
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .info-text {
+            color: #555;
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .info-highlight {
+            background: #e8f5e9;
+            border-left: 4px solid #2e7d32;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 5px;
+        }
+
+        .info-highlight h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .info-highlight p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .footer {
+            background: #008000;
+            padding: 40px 20px;
+            margin-top: 60px;
+        }
+
+        .footer-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            color: white;
+        }
+
+        .footer-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .footer-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .footer-card p {
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: 0.95;
+            margin: 5px 0;
+        }
+
+        .footer-card .icon {
+            font-size: 24px;
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 14px;
+        }
+
+        .inicio-button {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: white;
+            color: #2e7d32;
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid #2e7d32;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .inicio-button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .config-button {
+            position: fixed;
+            bottom: 30px;
+            left: 160px;
+            background: white;
+            color: #2e7d32;
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid #2e7d32;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .config-button:hover {
+            background: #2e7d32;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .inicio-button {
+                bottom: 90px;
+                left: 30px;
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+
+            .config-button {
+                bottom: 30px;
+                left: 30px;
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+
+        /* === ESTILOS INFORMACIÓN IMPORTANTE === */
+        .info-importante-container {
+            background: #f8f9fa;
+            padding: 60px 20px;
+            margin-top: 60px;
+        }
+
+        .info-importante-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .info-importante-title {
+            text-align: center;
+            color: #2e7d32;
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .info-importante-title::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: #2e7d32;
+            display: block;
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        .info-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border: 2px solid #c8e6c9;
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(46, 125, 50, 0.15);
+            border-color: #2e7d32;
+        }
+
+        .info-icon {
+            width: 70px;
+            height: 70px;
+            background: #2e7d32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            margin: 0 auto 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        .info-card h3 {
+            color: #2e7d32;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .info-card p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        .info-card strong {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .countdown {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .time-box {
+                min-width: 80px;
+                padding: 15px;
+            }
+
+            .time-value {
+                font-size: 36px;
+            }
+
+            .timer-title {
+                font-size: 24px;
+            }
+
+            .info-title {
+                font-size: 28px;
+            }
+
+            /* Responsive para información importante */
+            .info-importante-container {
+                padding: 40px 20px;
+                margin-top: 40px;
+            }
+
+            .info-importante-title {
+                font-size: 2em;
+                margin-bottom: 30px;
+            }
+
+            .info-cards-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .info-card {
+                padding: 25px 20px;
+            }
+
+            .info-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">  
+        <img src="Votaciones/Img/baner.png" alt="Banner Institución Educativa">
+    </div>
+
+    <div class="main-container">
+        <div class="content-wrapper">
+            <div class="content-grid">
+                <div class="timer-section">
+                    <h2 class="timer-title">Votación Estudiantil 2025</h2>
+                    <p class="timer-subtitle">Las elecciones inician en:</p>
+                    <div class="countdown" id="countdown">
+                        <div class="time-box">
+                            <span class="time-value" id="days">00</span>
+                            <span class="time-label">Días</span>
+                        </div>
+
+                        <div class="time-box">
+                            <span class="time-value" id="hours">00</span>
+                            <span class="time-label">Horas</span>
+                        </div>
+                        <div class="time-box">
+                            <span class="time-value" id="minutes">00</span>
+                            <span class="time-label">Minutos</span>
+                        </div>
+                        <div class="time-box">
+                            <span class="time-value" id="seconds">00</span>
+                            <span class="time-label">Segundos</span>
+                        </div>
+                    </div>
+                    <p class="election-date-text">Fecha de elección: 15 de abril de 2025</p>
+                    <a href="registrop.html" id="votingButton" class="voting-button disabled" onclick="return checkVotingEnabled()">
+                        🗳️ Ir a Votar
+                    </a>
+                </div>
+
+                <div class="info-section">
+                    <h2 class="info-title">¿Qué es la Votación Estudiantil?</h2>
+                    <p class="info-text">
+                        La votación estudiantil es un proceso democrático donde los estudiantes de grados 3° a 11° ejercen su derecho al voto para elegir a sus representantes estudiantiles los cuales seria personeria y contraloria.
+                    </p>
+                    <p class="info-text">
+                        Este sistema digital garantiza transparencia, seguridad y facilidad en el proceso electoral, permitiendo que cada voz estudiantil sea escuchada y contada de manera confiable.
+                    </p>
+
+                    <div class="info-highlight">
+                        <h3>🗳️ Características del Sistema</h3>
+                        <p>
+                            • Plataforma 100% segura y encriptada<br>
+                            • Resultados en tiempo real<br>
+                            • Transparencia total en el conteo<br>
+                            • Tecnología de vanguardia
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Información Importante -->
+    <div class="info-importante-container">
+        <div class="info-importante-wrapper">
+            <h2 class="info-importante-title">Información Importante</h2>
+            <div class="info-cards-grid">
+                <div class="info-card">
+                    <div class="info-icon">
+                        📅
+                    </div>
+                    <h3>Fechas de Votación</h3>
+                    <p>Las elecciones se realizarán durante la semana del 15 al 19 de abril de 2024.</p>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">
+                        👥
+                    </div>
+                    <h3>Posiciones a Elegir</h3>
+                    <p><strong>Contralor:</strong> Grados 3° a 11°<br><strong>Personero:</strong> Grados 3° a 11°</p>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">
+                        🕐
+                    </div>
+                    <h3>Horarios</h3>
+                    <p>La votación estará disponible de 7:00 AM a 4:00 PM durante los días de elección.</p>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">
+                        🛡️
+                    </div>
+                    <h3>Seguridad</h3>
+                    <p>Cada estudiante puede votar una sola vez por cada posición. El sistema garantiza la confidencialidad de tu voto.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-grid">
+            <div class="footer-card">
+                <h3><span class="icon">🏛️</span> Institución Educativa</h3>
+                <p>📍 Carrera 15 # 12-34, Neiva - Huila</p>
+                <p>📞 Teléfono: (8) 871-2345</p>
+                <p>📧 Email: info@institucion.edu.co</p>
+                <p>🌐 Web: www.institucion.edu.co</p>
+                <p>🎂 Fundada en 1934 - 90 años de tradición</p>
+            </div>
+
+            <div class="footer-card">
+                <h3><span class="icon">🔗</span> Enlaces Útiles</h3>
+                <p>📄 Página Principal</p>
+                <p>📋 Reglamento Electoral</p>
+                <p>❓ Preguntas Frecuentes</p>
+                <p>🛠️ Soporte Técnico</p>
+                <p>📁 Documentos</p>
+            </div>
+
+            <div class="footer-card">
+                <h3><span class="icon">⏰</span> Horarios de Votación</h3>
+                <p>🗓️ Lunes a Viernes: 7:00 AM - 4:00 PM</p>
+                <p>📅 Días de Elección: 15-18 de Abril 2024</p>
+                <p>👥 Participación: Grados 9° a 11°</p>
+                <p>🔒 Sistema 100% Seguro</p>
+            </div>
+
+            <div class="footer-card">
+                <h3><span class="icon">💻</span> Sistema de Votación</h3>
+                <p>Plataforma digital segura y confiable para las elecciones estudiantiles.</p>
+                <p>💡 Tecnología de vanguardia para garantizar transparencia y participación democrática.</p>
+                <p>🔐 Encriptación de extremo a extremo</p>
+                <p>📊 Resultados en tiempo real</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            🗳️ Sistema de Votación Estudiantil<br>
+            © 2024 Institución Educativa Técnico Superior Neiva. Todos los derechos reservados.
+        </div>
+    </div>
+
+    <a href="http://tecnicosuperiorneiva.com.co" target="_blank" class="inicio-button">
+        🏠 Inicio
+    </a>
+
+    <button class="config-button">
+        ⚙️ Configuración
+    </button>
+
+    <script>
+        // Cargar fecha de votación desde localStorage o usar fecha por defecto
+        function obtenerFechaVotacion() {
+            const fechaGuardada = localStorage.getItem('fechaVotacion');
+            if (fechaGuardada) {
+                return new Date(fechaGuardada).getTime();
+            }
+            // Fecha por defecto si no hay ninguna guardada
+            return new Date('2025-04-15T07:00:00').getTime();
+        }
+        
+        const votingDate = obtenerFechaVotacion();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = votingDate - now;
+            const votingButton = document.getElementById('votingButton');
+
+            if (distance < 0) {
+                document.getElementById('days').textContent = '00';
+                document.getElementById('hours').textContent = '00';
+                document.getElementById('minutes').textContent = '00';
+                document.getElementById('seconds').textContent = '00';
+                document.querySelector('.timer-subtitle').textContent = '¡Las elecciones han comenzado!';
+                
+                // Habilitar el botón de votación
+                votingButton.classList.remove('disabled');
+                votingButton.style.animation = 'pulse 2s infinite';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        function checkVotingEnabled() {
+            const now = new Date().getTime();
+            const distance = votingDate - now;
+            
+            if (distance >= 0) {
+                alert('La votación aún no ha comenzado. Por favor espera hasta la fecha indicada.');
+                return false;
+            }
+            return true;
+        }
+
+        // Actualizar el contador cada segundo
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
