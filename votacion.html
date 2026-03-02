@@ -1015,6 +1015,21 @@
         </div>
     </div>
 
+    <div id="modalCargaVotantesExcel" class="modal hidden">
+        <div class="modal-content">
+            <h3>🔐 Autorizar Carga de Votantes</h3>
+            <p>Ingrese credenciales de administrador para cargar el archivo Excel</p>
+            <p id="timerCargaVotantesExcel" class="timer-reinicio">Tiempo restante: 30s</p>
+            <p id="mensajeCargaVotantesExcel" class="mensaje-reinicio"></p>
+            <input type="text" id="usuarioAdministradorCarga" placeholder="Usuario administrador" maxlength="100" autocomplete="off" autocorrect="off" spellcheck="false" onkeypress="if(event.key==='Enter') document.getElementById('passwordAdministradorCarga').focus()">
+            <input type="password" id="passwordAdministradorCarga" placeholder="Password administrador" maxlength="100" autocomplete="new-password" onkeypress="if(event.key==='Enter') confirmarCargaVotantesExcel()">
+            <div class="modal-buttons">
+                <button onclick="cancelarCargaVotantesExcel()" class="btn-cancelar">Cancelar</button>
+                <button id="btnConfirmarCargaVotantesExcel" onclick="confirmarCargaVotantesExcel()" class="btn-agregar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="votingArea" class="area-votacion">
         <h2>Sistema de Votación Estudiantil</h2>
         

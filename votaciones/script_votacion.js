@@ -8,6 +8,50 @@ let candidatos = {
 };
 let temporizadorReinicioVotacion = null;
 let segundosReinicioVotacion = 30;
+let temporizadorCargaVotantesExcel = null;
+let segundosCargaVotantesExcel = 30;
+let cargaVotantesExcelPendiente = null;
+
+function esDocumentoValido(documento) {
+    return /^\d{6,11}$/.test(String(documento || '').trim());
+}
+
+function normalizarCabecera(valor) {
+    return String(valor || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function normalizarDocumentoExcel(valor) {
+    let documento = String(valor ?? '').trim();
+
+    if (/^\d+\.0+$/.test(documento)) {
+        documento = documento.split('.')[0];
+    }
+
+    return documento.replace(/\s+/g, '');
+}
+
+function obtenerValorColumna(row, aliasCabeceras, valorPorDefecto = '') {
+    if (!row || typeof row !== 'object') return String(valorPorDefecto || '');
+
+    const valoresPorCabecera = {};
+    Object.keys(row).forEach((key) => {
+        valoresPorCabecera[normalizarCabecera(key)] = row[key];
+    });
+
+    for (const alias of aliasCabeceras) {
+        const clave = normalizarCabecera(alias);
+        if (Object.prototype.hasOwnProperty.call(valoresPorCabecera, clave)) {
+            return String(valoresPorCabecera[clave] ?? '').trim();
+        }
+    }
+
+    return String(valorPorDefecto || '').trim();
+}
 
 // ======================================
 // CARGAR CANDIDATOS Y DATOS AL INICIAR
@@ -166,6 +210,11 @@ async function agregarVotanteIndividual() {
         return;
     }
 
+    if (!esDocumentoValido(codigo)) {
+        alert('El documento debe tener entre 6 y 11 dígitos numéricos');
+        return;
+    }
+
     try {
         const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_votante.php', {
             method: 'POST',
@@ -206,41 +255,238 @@ async function cargarVotantesExcel(input) {
         const data = await file.arrayBuffer();
         const workbook = XLSX.read(data, { type: 'array' });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-        let cargados = 0;
-        let errores = 0;
+        const filasTotales = jsonData.length;
 
-        for (const row of jsonData) {
-            try {
-                const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_votante.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        codigo: row.codigo || row.Código || row.code || row.Code || row.id || row.Id,
-                        nombre: row.nombre || row.Nombre || row.name || row.Name
-                    })
-                });
+        const votantes = jsonData
+            .map((row) => {
+                const codigo = normalizarDocumentoExcel(
+                    obtenerValorColumna(row, [
+                        'codigo',
+                        'código',
+                        'code',
+                        'id',
+                        'id_votante',
+                        'documento',
+                        'nro_documento',
+                        'numero_documento',
+                        'num_documento',
+                        'cedula',
+                        'cédula'
+                    ])
+                );
+                const nombre = obtenerValorColumna(row, [
+                    'nombre',
+                    'nombres',
+                    'name',
+                    'nombre_completo',
+                    'votante'
+                ]);
+                return { codigo, nombre };
+            })
+            .filter((row) => row.codigo && row.nombre && esDocumentoValido(row.codigo))
+            .map((row) => ({
+                codigo: row.codigo,
+                nombre: row.nombre.slice(0, 150)
+            }));
 
-                const result = await response.json();
-                if (result.success) {
-                    cargados++;
-                } else {
-                    errores++;
-                }
-            } catch (error) {
-                errores++;
-            }
+        const filasDescartadas = filasTotales - votantes.length;
+
+        if (votantes.length === 0) {
+            statusDiv.className = 'error';
+            statusDiv.textContent = '✗ El archivo no contiene filas válidas (documento 6-11 dígitos y nombre)';
+            input.value = '';
+            return;
         }
 
-        statusDiv.className = cargados > 0 ? 'success' : 'error';
-        statusDiv.textContent = `✓ Cargados: ${cargados} | ✗ Errores: ${errores}`;
-        cargarVotantes();
-        input.value = '';
+        cargaVotantesExcelPendiente = {
+            votantes,
+            input,
+            statusDiv
+        };
+
+        statusDiv.className = '';
+        statusDiv.textContent = `ℹ️ Archivo leído: ${votantes.length} válido(s) de ${filasTotales}. Descartados: ${filasDescartadas}. Autoriza para cargar.`;
+        abrirModalCargaVotantesExcel(votantes.length);
     } catch (error) {
         statusDiv.className = 'error';
         statusDiv.textContent = '✗ Error al procesar archivo';
+        input.value = '';
         console.error('Error:', error);
+    }
+}
+
+function abrirModalCargaVotantesExcel(totalRegistros) {
+    const modal = document.getElementById('modalCargaVotantesExcel');
+    const usuarioInput = document.getElementById('usuarioAdministradorCarga');
+    const passwordInput = document.getElementById('passwordAdministradorCarga');
+    const mensaje = document.getElementById('mensajeCargaVotantesExcel');
+    const btnConfirmar = document.getElementById('btnConfirmarCargaVotantesExcel');
+
+    if (!modal || !usuarioInput || !passwordInput) return;
+
+    usuarioInput.value = '';
+    passwordInput.value = '';
+    if (mensaje) {
+        mensaje.style.display = 'block';
+        mensaje.style.color = '#666';
+        mensaje.textContent = `Se cargarán ${totalRegistros} registro(s).`;
+    }
+    if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+    }
+
+    segundosCargaVotantesExcel = 30;
+    actualizarTextoTimerCargaVotantesExcel();
+
+    modal.classList.remove('hidden');
+    usuarioInput.focus();
+
+    if (temporizadorCargaVotantesExcel) {
+        clearInterval(temporizadorCargaVotantesExcel);
+    }
+
+    temporizadorCargaVotantesExcel = setInterval(() => {
+        segundosCargaVotantesExcel -= 1;
+        actualizarTextoTimerCargaVotantesExcel();
+
+        if (segundosCargaVotantesExcel <= 0) {
+            cancelarCargaVotantesExcel(true);
+        }
+    }, 1000);
+}
+
+function actualizarTextoTimerCargaVotantesExcel() {
+    const timer = document.getElementById('timerCargaVotantesExcel');
+    if (!timer) return;
+    timer.textContent = `Tiempo restante: ${segundosCargaVotantesExcel}s`;
+}
+
+function mostrarMensajeModalCargaVotantesExcel(texto, esError = false) {
+    const mensaje = document.getElementById('mensajeCargaVotantesExcel');
+    if (!mensaje) return;
+
+    mensaje.style.display = 'block';
+    mensaje.textContent = texto;
+    mensaje.style.color = esError ? '#dc3545' : '#2e7d32';
+}
+
+function cerrarModalCargaVotantesExcel() {
+    const modal = document.getElementById('modalCargaVotantesExcel');
+    const usuarioInput = document.getElementById('usuarioAdministradorCarga');
+    const passwordInput = document.getElementById('passwordAdministradorCarga');
+    const mensaje = document.getElementById('mensajeCargaVotantesExcel');
+    const btnConfirmar = document.getElementById('btnConfirmarCargaVotantesExcel');
+
+    if (temporizadorCargaVotantesExcel) {
+        clearInterval(temporizadorCargaVotantesExcel);
+        temporizadorCargaVotantesExcel = null;
+    }
+
+    if (modal) modal.classList.add('hidden');
+    if (usuarioInput) usuarioInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (mensaje) {
+        mensaje.style.display = 'none';
+        mensaje.textContent = '';
+        mensaje.style.color = '#666';
+    }
+    if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+    }
+}
+
+function cancelarCargaVotantesExcel(esTimeout = false) {
+    const estado = cargaVotantesExcelPendiente?.statusDiv;
+    const inputArchivo = cargaVotantesExcelPendiente?.input;
+
+    cerrarModalCargaVotantesExcel();
+
+    if (estado) {
+        estado.className = 'error';
+        estado.textContent = esTimeout
+            ? '✗ Tiempo agotado. La carga fue cancelada.'
+            : '✗ Carga cancelada por el usuario.';
+    }
+
+    if (inputArchivo) {
+        inputArchivo.value = '';
+    }
+
+    cargaVotantesExcelPendiente = null;
+}
+
+async function confirmarCargaVotantesExcel() {
+    const usuarioInput = document.getElementById('usuarioAdministradorCarga');
+    const passwordInput = document.getElementById('passwordAdministradorCarga');
+    const btnConfirmar = document.getElementById('btnConfirmarCargaVotantesExcel');
+
+    if (!usuarioInput || !passwordInput) return;
+    if (!cargaVotantesExcelPendiente || !Array.isArray(cargaVotantesExcelPendiente.votantes)) {
+        mostrarMensajeModalCargaVotantesExcel('No hay archivo pendiente para cargar', true);
+        return;
+    }
+    if (btnConfirmar && btnConfirmar.disabled) return;
+
+    const usuario = usuarioInput.value.trim();
+    const password = passwordInput.value;
+    const errorCredenciales = validarCredencialesReinicio(usuario, password);
+
+    if (errorCredenciales) {
+        mostrarMensajeModalCargaVotantesExcel(errorCredenciales, true);
+        return;
+    }
+
+    if (btnConfirmar) {
+        btnConfirmar.disabled = true;
+    }
+
+    mostrarMensajeModalCargaVotantesExcel('Validando credenciales y cargando registros...');
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/cargar_votantes_excel.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuario_adminstrador: usuario,
+                password_adminstrador: password,
+                votantes: cargaVotantesExcelPendiente.votantes
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            mostrarMensajeModalCargaVotantesExcel(data.error || 'No fue posible cargar los votantes', true);
+            passwordInput.value = '';
+            return;
+        }
+
+        const estado = cargaVotantesExcelPendiente.statusDiv;
+        const inputArchivo = cargaVotantesExcelPendiente.input;
+
+        cerrarModalCargaVotantesExcel();
+
+        if (estado) {
+            estado.className = 'success';
+            estado.textContent = `✓ Cargados: ${data.insertados || 0} | Actualizados: ${data.actualizados || 0} | Errores: ${data.errores || 0}`;
+        }
+
+        if (inputArchivo) {
+            inputArchivo.value = '';
+        }
+
+        cargaVotantesExcelPendiente = null;
+        await cargarTodosVotantes();
+    } catch (error) {
+        mostrarMensajeModalCargaVotantesExcel('Error al cargar los votantes', true);
+        passwordInput.value = '';
+        console.error('Error:', error);
+    } finally {
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+        }
     }
 }
 
@@ -1258,6 +1504,12 @@ async function verificarKey() {
 document.addEventListener('keydown', function(event) {
     if (event.key !== 'Escape') return;
 
+    const modalCargaExcel = document.getElementById('modalCargaVotantesExcel');
+    if (modalCargaExcel && !modalCargaExcel.classList.contains('hidden')) {
+        cancelarCargaVotantesExcel();
+        return;
+    }
+
     const modalReinicio = document.getElementById('modalReinicioVotacion');
     if (modalReinicio && !modalReinicio.classList.contains('hidden')) {
         cerrarModalReinicioVotacion();
@@ -1271,6 +1523,12 @@ document.addEventListener('keydown', function(event) {
 });
 
 document.addEventListener('click', function(event) {
+    const modalCargaExcel = document.getElementById('modalCargaVotantesExcel');
+    if (modalCargaExcel && !modalCargaExcel.classList.contains('hidden') && event.target === modalCargaExcel) {
+        cancelarCargaVotantesExcel();
+        return;
+    }
+
     const modalReinicio = document.getElementById('modalReinicioVotacion');
     if (modalReinicio && !modalReinicio.classList.contains('hidden') && event.target === modalReinicio) {
         cerrarModalReinicioVotacion();
