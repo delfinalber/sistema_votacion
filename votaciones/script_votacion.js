@@ -130,8 +130,8 @@ async function cargarCandidatos() {
 // ======================================
 async function cargarVotantes() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php';
-        const response = await fetch(apiUrl);
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php?t=' + Date.now();
+        const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
         if (data.success) {
@@ -147,8 +147,8 @@ async function cargarVotantes() {
 // ======================================
 async function cargarTodosVotantes() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php';
-        const response = await fetch(apiUrl);
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php?t=' + Date.now();
+        const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
         if (data.success && data.votantes) {
@@ -1280,6 +1280,13 @@ function mostrarTab(tab) {
         cargarTabResultados();
         detenerActualizacionResultadosAdmin();
         window.__intervaloResultadosAdmin = setInterval(cargarTabResultados, 3000);
+    } else if (tab === 'votantes') {
+        detenerActualizacionResultadosAdmin();
+        const listaDiv = document.getElementById('listaVotantesDiv');
+        if (listaDiv) {
+            listaDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Cargando votantes desde base de datos...</p>';
+        }
+        cargarTodosVotantes();
     } else if (tab === 'sistema') {
         cargarFechaVotacionEnSistema();
     } else {

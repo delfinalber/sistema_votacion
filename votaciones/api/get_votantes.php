@@ -3,6 +3,9 @@
 // API: OBTENER LISTA DE VOTANTES
 // ======================================
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 require_once 'db.php';
 
@@ -14,8 +17,7 @@ try {
         SELECT 
             id_votante,
             nombre,
-            voto_realizado,
-            fecha_registro
+            voto_realizado
         FROM votantes
         ORDER BY nombre ASC
     ";
