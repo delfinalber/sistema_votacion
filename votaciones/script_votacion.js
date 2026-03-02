@@ -897,6 +897,328 @@ async function exportarResultadosExcel() {
     }
 }
 
+async function exportarRegistroMesaExcel() {
+    try {
+        const apiUrl = `${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
+        const response = await fetch(apiUrl, { cache: 'no-store' });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(data.error || 'No fue posible obtener el registro de mesa');
+            return;
+        }
+
+        if (!Array.isArray(data.registros) || data.registros.length === 0) {
+            alert('No hay registros de mesa para descargar');
+            return;
+        }
+
+        const datosExcel = [
+            ['ID', 'Acción', 'Usuario Sesión', 'Profesor Nombre', 'Profesor Materia', 'Puesto Votación', 'Profesor Teléfono', 'Jurado Nombre', 'Jurado Grado', 'Fecha Registro']
+        ];
+
+        data.registros.forEach((fila) => {
+            datosExcel.push([
+                fila.id || '',
+                fila.accion || '',
+                fila.usuario_sesion || '',
+                fila.profesor_nombre || '',
+                fila.profesor_materia || '',
+                fila.puesto_votacion || '',
+                fila.profesor_telefono || '',
+                fila.jurado_nombre || '',
+                fila.jurado_grado || '',
+                fila.fecha_registro || ''
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(datosExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'RegistroMesa');
+
+        const fecha = new Date();
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+        XLSX.writeFile(wb, `Registro_Mesa_${yyyy}${mm}${dd}.xlsx`);
+    } catch (error) {
+        alert('Error al descargar registro de mesa');
+        console.error('Error:', error);
+    }
+}
+
+async function exportarRegistroMesaCSV() {
+    try {
+        const apiUrl = `${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
+        const response = await fetch(apiUrl, { cache: 'no-store' });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            alert(data.error || 'No fue posible obtener el registro de mesa');
+            return;
+        }
+
+        if (!Array.isArray(data.registros) || data.registros.length === 0) {
+            alert('No hay registros de mesa para descargar');
+            return;
+        }
+
+        const encabezados = [
+            'ID',
+            'Acción',
+            'Usuario Sesión',
+            'Profesor Nombre',
+            'Profesor Materia',
+            'Puesto Votación',
+            'Profesor Teléfono',
+            'Jurado Nombre',
+            'Jurado Grado',
+            'Fecha Registro'
+        ];
+
+        const escaparCSV = (valor) => {
+            const texto = String(valor ?? '');
+            return `"${texto.replace(/"/g, '""')}"`;
+        };
+
+        const filas = data.registros.map((fila) => [
+            fila.id || '',
+            fila.accion || '',
+            fila.usuario_sesion || '',
+            fila.profesor_nombre || '',
+            fila.profesor_materia || '',
+            fila.puesto_votacion || '',
+            fila.profesor_telefono || '',
+            fila.jurado_nombre || '',
+            fila.jurado_grado || '',
+            fila.fecha_registro || ''
+        ]);
+
+        const contenidoCSV = [encabezados, ...filas]
+            .map((fila) => fila.map(escaparCSV).join(','))
+            .join('\n');
+
+        const fecha = new Date();
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+
+        const blob = new Blob([`\uFEFF${contenidoCSV}`], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = `Registro_Mesa_${yyyy}${mm}${dd}.csv`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        alert('Error al descargar registro de mesa en CSV');
+        console.error('Error:', error);
+    }
+}
+
+async function exportarRegistroMesaPDF() {
+    try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert('No fue posible cargar el generador de PDF');
+            return;
+        }
+
+        const [respMesa, respResultados, respConsolidado] = await Promise.all([
+            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`, { cache: 'no-store' }),
+            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_resultados_votos.php?t=${Date.now()}`, { cache: 'no-store' }),
+            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
+        ]);
+
+        const dataMesa = await respMesa.json();
+        const dataResultados = await respResultados.json();
+        const dataConsolidado = await respConsolidado.json();
+
+        if (!respMesa.ok || !dataMesa.success) {
+            alert(dataMesa.error || 'No fue posible obtener el registro de mesa');
+            return;
+        }
+
+        if (!Array.isArray(dataMesa.registros) || dataMesa.registros.length === 0) {
+            alert('No hay registros de mesa para descargar');
+            return;
+        }
+
+        const votosBlancoPersonero = dataConsolidado?.success
+            ? Number(dataConsolidado.votos_blanco_personero || 0)
+            : 0;
+
+        const votosBlancoContralor = dataConsolidado?.success
+            ? Number(dataConsolidado.votos_blanco_contralor || 0)
+            : 0;
+
+        const totalPersonero = dataConsolidado?.success
+            ? (Array.isArray(dataConsolidado.personeros)
+                ? dataConsolidado.personeros.reduce((acumulado, item) => acumulado + Number(item.total_votos || 0), 0)
+                : 0) + votosBlancoPersonero
+            : 0;
+
+        const totalContralor = dataConsolidado?.success
+            ? (Array.isArray(dataConsolidado.contralores)
+                ? dataConsolidado.contralores.reduce((acumulado, item) => acumulado + Number(item.total_votos || 0), 0)
+                : 0) + votosBlancoContralor
+            : 0;
+
+        const totalVotosEnBlanco = votosBlancoPersonero + votosBlancoContralor;
+
+        const obtenerResultadoFinalCargo = (candidatosCargo, votosBlanco) => {
+            const lista = Array.isArray(candidatosCargo)
+                ? candidatosCargo.map((item) => ({
+                    nombre: String(item.nombre || '').trim() || 'Sin nombre',
+                    votos: Number(item.total_votos || 0)
+                }))
+                : [];
+
+            lista.push({ nombre: 'Voto en Blanco', votos: Number(votosBlanco || 0) });
+
+            const votosMaximos = lista.reduce((maximo, actual) => Math.max(maximo, actual.votos), 0);
+            if (votosMaximos <= 0) return 'Sin votos registrados';
+
+            const ganadores = lista.filter((item) => item.votos === votosMaximos);
+            if (ganadores.length > 1) {
+                return `Empate: ${ganadores.map((item) => `${item.nombre} (${item.votos})`).join(' / ')}`;
+            }
+
+            return `${ganadores[0].nombre} (${ganadores[0].votos} votos)`;
+        };
+
+        const resultadoFinalPersonero = obtenerResultadoFinalCargo(
+            dataConsolidado.personeros,
+            votosBlancoPersonero
+        );
+
+        const resultadoFinalContralor = obtenerResultadoFinalCargo(
+            dataConsolidado.contralores,
+            votosBlancoContralor
+        );
+
+        const fechaHoraGeneracion = obtenerFechaHoraLocalSistema();
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+        doc.setFontSize(14);
+        doc.text('Registro de Mesa de Votación', 40, 40);
+
+        doc.setFontSize(10);
+        doc.text(`Fecha y hora de generación: ${fechaHoraGeneracion}`, 40, 60);
+        doc.text(`Total votos en blanco: ${totalVotosEnBlanco}`, 40, 76);
+        doc.text(`Total votos Personeros: ${totalPersonero}`, 40, 92);
+        doc.text(`Total votos Contralores: ${totalContralor}`, 40, 108);
+        doc.text(`Actualizado en resultados: ${dataResultados?.actualizado_en || 'N/D'}`, 40, 124);
+        doc.text('Resultado final en tiempo real:', 40, 140);
+        doc.text(`Personero: ${resultadoFinalPersonero}`, 52, 156);
+        doc.text(`Contralor: ${resultadoFinalContralor}`, 52, 172);
+
+        const nombresPersoneros = dataConsolidado?.success && Array.isArray(dataConsolidado.personeros)
+            ? dataConsolidado.personeros
+                .map((item) => String(item.nombre || '').trim())
+                .filter((nombre) => nombre !== '')
+            : [];
+
+        const nombresContralores = dataConsolidado?.success && Array.isArray(dataConsolidado.contralores)
+            ? dataConsolidado.contralores
+                .map((item) => String(item.nombre || '').trim())
+                .filter((nombre) => nombre !== '')
+            : [];
+
+        const cantidadFilasNombres = Math.max(nombresPersoneros.length, nombresContralores.length, 1);
+        const filasNombres = Array.from({ length: cantidadFilasNombres }, (_, indice) => [
+            nombresPersoneros[indice] || '',
+            nombresContralores[indice] || ''
+        ]);
+
+        if (nombresPersoneros.length === 0 && nombresContralores.length === 0) {
+            filasNombres[0] = ['Sin registros', 'Sin registros'];
+        }
+
+        doc.setFontSize(10);
+        doc.text('Nombres completos de candidatos', 40, 188);
+
+        doc.autoTable({
+            startY: 196,
+            head: [['Personeros', 'Contralores']],
+            body: filasNombres,
+            styles: { fontSize: 9, cellPadding: 4 },
+            headStyles: { fillColor: [46, 125, 50] },
+            margin: { left: 20, right: 20 }
+        });
+
+        const inicioTablaRegistroMesa = (doc.lastAutoTable?.finalY || 196) + 18;
+
+        const filasTabla = dataMesa.registros.map((fila) => [
+            fila.id || '',
+            fila.accion || '',
+            fila.usuario_sesion || '',
+            fila.profesor_nombre || '',
+            fila.profesor_materia || '',
+            fila.puesto_votacion || '',
+            fila.profesor_telefono || '',
+            fila.jurado_nombre || '',
+            fila.jurado_grado || '',
+            fila.fecha_registro || ''
+        ]);
+
+        doc.autoTable({
+            startY: inicioTablaRegistroMesa,
+            head: [[
+                'ID',
+                'Acción',
+                'Usuario Sesión',
+                'Profesor',
+                'Materia',
+                'Puesto',
+                'Teléfono',
+                'Jurado',
+                'Grado',
+                'Fecha Registro'
+            ]],
+            body: filasTabla,
+            styles: { fontSize: 8, cellPadding: 4 },
+            headStyles: { fillColor: [46, 125, 50] },
+            margin: { left: 20, right: 20 }
+        });
+
+        const altoPagina = doc.internal.pageSize.getHeight();
+        let yFirmas = (doc.lastAutoTable?.finalY || inicioTablaRegistroMesa) + 50;
+
+        if (yFirmas > altoPagina - 90) {
+            doc.addPage();
+            yFirmas = 120;
+        }
+
+        const margenIzquierdo = 40;
+        const margenDerecho = 40;
+        const anchoContenido = doc.internal.pageSize.getWidth() - margenIzquierdo - margenDerecho;
+        const centroIzquierdo = margenIzquierdo + (anchoContenido * 0.25);
+        const centroDerecho = margenIzquierdo + (anchoContenido * 0.75);
+        const anchoLineaFirma = 180;
+
+        doc.setDrawColor(80, 80, 80);
+        doc.line(centroIzquierdo - (anchoLineaFirma / 2), yFirmas, centroIzquierdo + (anchoLineaFirma / 2), yFirmas);
+        doc.line(centroDerecho - (anchoLineaFirma / 2), yFirmas, centroDerecho + (anchoLineaFirma / 2), yFirmas);
+
+        doc.setFontSize(10);
+        doc.text('TESTIGO ELECTORAL', centroIzquierdo, yFirmas + 14, { align: 'center' });
+        doc.text('RECTOR I.E', centroDerecho, yFirmas + 14, { align: 'center' });
+
+        const fecha = new Date();
+        const yyyy = fecha.getFullYear();
+        const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+        const dd = String(fecha.getDate()).padStart(2, '0');
+        doc.save(`Registro_Mesa_${yyyy}${mm}${dd}.pdf`);
+    } catch (error) {
+        alert('Error al descargar registro de mesa en PDF');
+        console.error('Error:', error);
+    }
+}
+
 // ======================================
 // REINICIAR VOTACIÓN
 // ======================================
@@ -1299,11 +1621,15 @@ async function cargarTabResultados() {
     if (!cont) return;
 
     try {
-        const apiUrl = `${window.location.origin}/sistema_votacion/votaciones/api/obtener_resultados_votos.php`;
-        const res = await fetch(apiUrl, { cache: 'no-store' });
-        const data = await res.json();
+        const [resResultados, resConsolidado] = await Promise.all([
+            fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_resultados_votos.php?t=${Date.now()}`, { cache: 'no-store' }),
+            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
+        ]);
 
-        if (!data.success) {
+        const data = await resResultados.json();
+        const consolidado = await resConsolidado.json();
+
+        if (!data.success || !consolidado.success) {
             cont.innerHTML = '<p>Error al cargar resultados.</p>';
             return;
         }
@@ -1313,7 +1639,48 @@ async function cargarTabResultados() {
             return;
         }
 
+        const obtenerResultadoFinalCargo = (candidatosCargo, votosBlanco) => {
+            const lista = Array.isArray(candidatosCargo)
+                ? candidatosCargo.map(item => ({
+                    nombre: String(item.nombre || '').trim() || 'Sin nombre',
+                    votos: Number(item.total_votos || 0)
+                }))
+                : [];
+
+            lista.push({ nombre: 'Voto en Blanco', votos: Number(votosBlanco || 0) });
+
+            const votosMaximos = lista.reduce((maximo, actual) => Math.max(maximo, actual.votos), 0);
+            if (votosMaximos <= 0) return 'Sin votos registrados';
+
+            const ganadores = lista.filter(item => item.votos === votosMaximos);
+            if (ganadores.length > 1) {
+                return `Empate: ${ganadores.map(item => `${item.nombre} (${item.votos})`).join(' / ')}`;
+            }
+
+            return `${ganadores[0].nombre} (${ganadores[0].votos} votos)`;
+        };
+
+        const resultadoFinalPersonero = obtenerResultadoFinalCargo(
+            consolidado.personeros,
+            consolidado.votos_blanco_personero
+        );
+
+        const resultadoFinalContralor = obtenerResultadoFinalCargo(
+            consolidado.contralores,
+            consolidado.votos_blanco_contralor
+        );
+
         let html = `
+            <div class="resultado-cargo-admin">
+                <h4>🏁 Resultado final de la votación en tiempo real</h4>
+                <div class="resultado-item-admin">
+                    <span><strong>Personero:</strong> ${resultadoFinalPersonero}</span>
+                </div>
+                <div class="resultado-item-admin">
+                    <span><strong>Contralor:</strong> ${resultadoFinalContralor}</span>
+                </div>
+            </div>
+
             <div class="resultado-cargo-admin">
                 <h4>📊 Consolidado de la tabla votos</h4>
                 <div class="resultado-item-admin" style="font-weight: 600; background: #f7f7f7;">

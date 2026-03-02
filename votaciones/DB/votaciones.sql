@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 02-03-2026 a las 20:21:52
+-- Tiempo de generación: 02-03-2026 a las 22:10:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -69,6 +69,31 @@ INSERT INTO `candidatos` (`id_candidato`, `nombre`, `numero`, `cargo`, `foto`) V
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `registro_mesa`
+--
+
+CREATE TABLE `registro_mesa` (
+  `id_registro_mesa` int(11) NOT NULL,
+  `nombre_profe` varchar(100) NOT NULL,
+  `materia_profe` varchar(100) NOT NULL,
+  `puesto_votacion` varchar(10) NOT NULL,
+  `telefono_profe` bigint(12) NOT NULL,
+  `nombre_estudiante` varchar(100) NOT NULL,
+  `grado_estudiante` varchar(10) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish2_ci;
+
+--
+-- Volcado de datos para la tabla `registro_mesa`
+--
+
+INSERT INTO `registro_mesa` (`id_registro_mesa`, `nombre_profe`, `materia_profe`, `puesto_votacion`, `telefono_profe`, `nombre_estudiante`, `grado_estudiante`, `fecha`) VALUES
+(1, 'INGRESO TEST_INGRESO', 'INGRESO', 'N/A', 0, 'N/A', 'N/A', '2026-03-02 20:34:17'),
+(2, 'Profesor Prueba', 'Matemáticas', 'Mesa 1', 3000000000, 'Jurado Prueba', '11-A', '2026-03-02 20:34:20');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuario`
 --
 
@@ -104,10 +129,8 @@ CREATE TABLE `votantes` (
 --
 
 INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
-('1006110901', 'Valeria Torres Silva', 0),
 ('1006110902', 'Sebastián Arias', 0),
 ('1006110903', 'Gabriela Flores Mendoza', 0),
-('1006110904', 'Alejandro Vega Ortiz', 0),
 ('1006110905', 'Luciana Paredes Cruz', 0),
 ('1006111001', 'Camila Díaz Morales', 0),
 ('1006111002', 'Santiago Moreno Jiménez', 0),
@@ -134,7 +157,7 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 ('1121913362', 'Jean Carlos AVENDAÑO', 0),
 ('1122677802', 'Stefanny Lorena Quintero', 0),
 ('1145725934', 'Sofia gamboa', 0),
-('12345', 'ALBER DELFIN PEÑA ORTIGOZA', 0),
+('123456789', 'ALBER DELFIN PEÑA ORTIGOZA', 1),
 ('1234567891', 'pamela', 0),
 ('1586248598', 'Maria Paula', 0),
 ('1627832407', 'Camila Navarro', 0),
@@ -196,10 +219,7 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 ('9587023218', 'Laura Castro', 0),
 ('9880846442', 'Diana Torres', 0),
 ('9938542551', 'Julián Suárez', 0),
-('9948517215', 'Julián Pérez', 0),
-('9994670281', 'Nicolás Castro', 0),
-('TST_RST2_20260302182454', 'TEST RESET2', 0),
-('TST_RST_20260302182423', 'TEST RESET', 0);
+('9948517215', 'Julián Pérez', 0);
 
 -- --------------------------------------------------------
 
@@ -222,7 +242,9 @@ CREATE TABLE `votos` (
 
 INSERT INTO `votos` (`id_voto`, `id_candidato`, `id_votante`, `es_blanco`, `valor_voto`, `fecha_voto`) VALUES
 (63, 0, '3284055678', 1, 1, '2026-03-02 18:57:51'),
-(64, 9, '3284055678', 0, 1, '2026-03-02 18:57:51');
+(64, 9, '3284055678', 0, 1, '2026-03-02 18:57:51'),
+(65, 0, '123456789', 1, 1, '2026-03-02 20:08:06'),
+(66, 0, '123456789', 1, 1, '2026-03-02 20:08:06');
 
 --
 -- Índices para tablas volcadas
@@ -239,6 +261,12 @@ ALTER TABLE `administrador`
 --
 ALTER TABLE `candidatos`
   ADD PRIMARY KEY (`id_candidato`);
+
+--
+-- Indices de la tabla `registro_mesa`
+--
+ALTER TABLE `registro_mesa`
+  ADD PRIMARY KEY (`id_registro_mesa`);
 
 --
 -- Indices de la tabla `usuario`
@@ -277,6 +305,12 @@ ALTER TABLE `candidatos`
   MODIFY `id_candidato` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT de la tabla `registro_mesa`
+--
+ALTER TABLE `registro_mesa`
+  MODIFY `id_registro_mesa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de la tabla `usuario`
 --
 ALTER TABLE `usuario`
@@ -286,7 +320,7 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `votos`
 --
 ALTER TABLE `votos`
-  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

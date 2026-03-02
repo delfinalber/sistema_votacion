@@ -120,9 +120,55 @@
 
             console.log('Sesión activa - Usuario: ' + sessionStorage.getItem('usuario_nombre'));
 
+            registrarIngresoSeccionMesa();
+
             // Proteger contra cierre de sesión accidental
             protegerContraNavegacionAtrás();
         });
+
+        async function registrarIngresoSeccionMesa() {
+            try {
+                const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/registrar_mesa.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-store',
+                    body: JSON.stringify({
+                        accion: 'ingreso',
+                        usuario_sesion: sessionStorage.getItem('usuario_nombre') || sessionStorage.getItem('usuario_admin') || ''
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    console.warn('No se pudo registrar ingreso de mesa');
+                }
+            } catch (error) {
+                console.warn('Error al registrar ingreso de mesa:', error);
+            }
+        }
+
+        async function registrarDatosMesa(datosAdmin) {
+            const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/registrar_mesa.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                cache: 'no-store',
+                body: JSON.stringify({
+                    accion: 'registro',
+                    usuario_sesion: sessionStorage.getItem('usuario_nombre') || sessionStorage.getItem('usuario_admin') || '',
+                    profesor_nombre: datosAdmin.profesor.nombre,
+                    profesor_materia: datosAdmin.profesor.materia,
+                    puesto_votacion: datosAdmin.profesor.puesto,
+                    profesor_telefono: datosAdmin.profesor.telefono,
+                    jurado_nombre: datosAdmin.jurado.nombre,
+                    jurado_grado: datosAdmin.jurado.grado
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'No fue posible guardar el registro de mesa');
+            }
+        }
 
         // ======================================
         // PROTEGER CONTRA NAVEGACIÓN HACIA ATRÁS
@@ -148,7 +194,7 @@
         // ======================================
         // MANEJO DEL FORMULARIO
         // ======================================
-        document.getElementById('adminRegisterForm').addEventListener('submit', function(event) {
+        document.getElementById('adminRegisterForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
             const datosAdmin = {
@@ -164,11 +210,18 @@
                 }
             };
 
-            // Guardar en sessionStorage (se borra al cerrar la pestaña)
-            sessionStorage.setItem('datosAdministrador', JSON.stringify(datosAdmin));
+            try {
+                await registrarDatosMesa(datosAdmin);
 
-            // Redirigir a votacion.html
-            window.location.href = 'votacion.html';
+                // Guardar en sessionStorage (se borra al cerrar la pestaña)
+                sessionStorage.setItem('datosAdministrador', JSON.stringify(datosAdmin));
+
+                // Redirigir a votacion.html
+                window.location.href = 'votacion.html';
+            } catch (error) {
+                console.error('Error al guardar registro de mesa:', error);
+                alert('No fue posible guardar el registro de mesa. Intente nuevamente.');
+            }
         });
     </script>
 

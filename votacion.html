@@ -1160,6 +1160,7 @@
                 <h3>📊 Resultados de la Votación</h3>
                 <div id="resumenResultados"></div>
                 <div class="botones-resultados">
+                    <button onclick="exportarRegistroMesaPDF()" class="btn-exportar">📥 Descargar Registro de Mesa (PDF)</button>
                     <button onclick="exportarResultadosExcel()" class="btn-exportar">📥 Exportar a Excel</button>
                     <button onclick="reiniciarVotacionSistema()" class="btn-reiniciar">🔄 Reiniciar Votación</button>
                 </div>
@@ -1236,7 +1237,9 @@
     </footer>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="Votaciones/script_votacion.js?v=20260302"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="Votaciones/script_votacion.js?v=20260307"></script>
     <script src="votaciones/resultados_tiempo_real.js?v=20260302"></script>
 </body>
 </html>
