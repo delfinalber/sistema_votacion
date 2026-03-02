@@ -66,7 +66,7 @@ try {
     }
 
     // Registrar el voto
-    $es_blanco = ($id_candidato === 0 || $id_candidato === NULL) ? 1 : 0;
+    $es_blanco = ($id_candidato === 0) ? 1 : 0;
     
     $stmt = $conn->prepare("INSERT INTO votos (id_candidato, id_votante, es_blanco, valor_voto, fecha_voto) VALUES (?, ?, ?, 1, NOW())");
     
@@ -74,7 +74,7 @@ try {
         throw new Exception("Error en prepared statement: " . $conn->error);
     }
 
-    $candidato_insert = ($es_blanco == 1) ? NULL : $id_candidato;
+    $candidato_insert = ($es_blanco == 1) ? 0 : $id_candidato;
     $stmt->bind_param("isi", $candidato_insert, $id_votante, $es_blanco);
 
     if (!$stmt->execute()) {

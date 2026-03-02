@@ -146,7 +146,7 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 CREATE TABLE `votos` (
   `id_voto` int(11) NOT NULL,
   `id_candidato` int(11) NOT NULL,
-  `id_votante` int(11) NOT NULL,
+  `id_votante` varchar(50) NOT NULL,
   `es_blanco` tinyint(1) NOT NULL,
   `valor_voto` int(1) NOT NULL,
   `fecha_voto` timestamp NOT NULL DEFAULT current_timestamp()
@@ -157,15 +157,15 @@ CREATE TABLE `votos` (
 --
 
 INSERT INTO `votos` (`id_voto`, `id_candidato`, `id_votante`, `es_blanco`, `valor_voto`, `fecha_voto`) VALUES
-(1, 1, 1006110901, 0, 1, '2026-03-01 19:26:46'),
-(2, 0, 1006110902, 0, 1, '2026-03-01 19:28:59'),
-(4, 2, 100611903, 0, 1, '2026-03-01 19:30:36'),
-(8, 2, 10061005, 0, 1, '2026-03-01 19:46:30'),
-(9, 0, 1006110905, 0, 1, '2026-03-01 19:53:38'),
-(10, 2, 1006110906, 0, 1, '2026-03-01 19:54:16'),
-(11, 1, 1006110907, 0, 1, '2026-03-01 19:54:54'),
-(12, 1, 1006110908, 0, 1, '2026-03-01 19:55:56'),
-(13, 0, 1006110909, 0, 1, '2026-03-01 19:57:01');
+(1, 1, '1006110901', 0, 1, '2026-03-01 19:26:46'),
+(2, 0, '1006110902', 0, 1, '2026-03-01 19:28:59'),
+(4, 2, '100611903', 0, 1, '2026-03-01 19:30:36'),
+(8, 2, '10061005', 0, 1, '2026-03-01 19:46:30'),
+(9, 0, '1006110905', 0, 1, '2026-03-01 19:53:38'),
+(10, 2, '1006110906', 0, 1, '2026-03-01 19:54:16'),
+(11, 1, '1006110907', 0, 1, '2026-03-01 19:54:54'),
+(12, 1, '1006110908', 0, 1, '2026-03-01 19:55:56'),
+(13, 0, '1006110909', 0, 1, '2026-03-01 19:57:01');
 
 --
 -- Índices para tablas volcadas
@@ -200,12 +200,8 @@ ALTER TABLE `votantes`
 --
 ALTER TABLE `votos`
   ADD PRIMARY KEY (`id_voto`),
-  ADD UNIQUE KEY `id_votante` (`id_votante`),
-  ADD UNIQUE KEY `unique_votante` (`id_votante`),
   ADD KEY `id_candidato_2` (`id_candidato`),
-  ADD KEY `id_votante_2` (`id_votante`),
-  ADD KEY `id_candidato_3` (`id_candidato`),
-  ADD KEY `id_votante_3` (`id_votante`);
+  ADD KEY `id_votante_2` (`id_votante`);
 
 --
 -- AUTO_INCREMENT de las tablas volcadas

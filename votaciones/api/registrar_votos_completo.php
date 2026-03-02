@@ -72,8 +72,8 @@ try {
     }
 
     // Registrar voto de Personero
-    $es_blanco_personero = ($id_personero === 0 || $id_personero === null) ? 1 : 0;
-    $candidato_personero = ($es_blanco_personero == 1) ? null : $id_personero;
+    $es_blanco_personero = ($id_personero === 0) ? 1 : 0;
+    $candidato_personero = ($es_blanco_personero == 1) ? 0 : $id_personero;
     
     $stmt = $conn->prepare("INSERT INTO votos (id_candidato, id_votante, es_blanco, valor_voto, fecha_voto) VALUES (?, ?, ?, 1, NOW())");
     $stmt->bind_param("isi", $candidato_personero, $id_votante, $es_blanco_personero);
@@ -84,8 +84,8 @@ try {
     $stmt->close();
 
     // Registrar voto de Contralor
-    $es_blanco_contralor = ($id_contralor === 0 || $id_contralor === null) ? 1 : 0;
-    $candidato_contralor = ($es_blanco_contralor == 1) ? null : $id_contralor;
+    $es_blanco_contralor = ($id_contralor === 0) ? 1 : 0;
+    $candidato_contralor = ($es_blanco_contralor == 1) ? 0 : $id_contralor;
     
     $stmt = $conn->prepare("INSERT INTO votos (id_candidato, id_votante, es_blanco, valor_voto, fecha_voto) VALUES (?, ?, ?, 1, NOW())");
     $stmt->bind_param("isi", $candidato_contralor, $id_votante, $es_blanco_contralor);
