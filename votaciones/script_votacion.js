@@ -30,7 +30,7 @@ window.addEventListener('load', async function() {
         // Cargar datos del panel administrativo
         try {
             await cargarCandidatos();
-            await cargarVotantes();
+            cargarVotantes();
             await cargarCandidatosAdmin();
             await cargarResultados();
             console.log('Panel administrativo cargado correctamente');
@@ -233,7 +233,7 @@ async function cargarVotantesExcel(input) {
 
         statusDiv.className = cargados > 0 ? 'success' : 'error';
         statusDiv.textContent = `✓ Cargados: ${cargados} | ✗ Errores: ${errores}`;
-        await cargarVotantes();
+        cargarVotantes();
         input.value = '';
     } catch (error) {
         statusDiv.className = 'error';
@@ -3239,4 +3239,28 @@ async function enviarVoto() {
             })
         });
 
-        const data = await response.json
+                const data = await response.json();
+        
+                if (!data.success) {
+                    alert(data.message || 'Error al registrar el voto');
+                    return;
+                }
+        
+                alert('¡Voto registrado exitosamente!');
+                
+                // Limpiar interfaz
+                document.getElementById('codigoVotante').value = '';
+                document.getElementById('votanteInfo').classList.add('hidden');
+                document.getElementById('nombreVotante').textContent = '';
+                votanteActual = null;
+        
+                // Mostrar resultados preliminares
+                setTimeout(() => {
+                    mostrarResultadosPreliminares();
+                }, 1000);
+        
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al enviar voto');
+            }
+        }
