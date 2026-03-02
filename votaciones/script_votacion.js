@@ -900,17 +900,42 @@ function mostrarModalKey() {
 
 function cerrarModalKey() {
     document.getElementById('modalKey').classList.add('hidden');
-    document.getElementById('keyInput').value = '';
+    document.getElementById('usuarioInput').value = '';
+    document.getElementById('passwordInput').value = '';
 }
 
-function verificarKey() {
-    const key = document.getElementById('keyInput').value;
-    if (key === 'admin123') {
-        document.getElementById('modalKey').classList.add('hidden');
-        document.getElementById('votingArea').classList.add('hidden');
-        document.getElementById('configArea').classList.remove('hidden');
-    } else {
-        alert('Clave incorrecta');
+async function verificarKey() {
+    const usuario = document.getElementById('usuarioInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+    
+    if (!usuario || !password) {
+        alert('Por favor ingrese usuario y contraseña');
+        return;
+    }
+    
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/validar_admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('modalKey').classList.add('hidden');
+            document.getElementById('usuarioInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('votingArea').classList.add('hidden');
+            document.getElementById('configArea').classList.remove('hidden');
+            // Cargar automáticamente la lista de votantes al entrar
+            await cargarTodosVotantes();
+        } else {
+            alert('Error: ' + (data.error || 'Credenciales inválidas'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al validar credenciales');
     }
 }
 
@@ -1186,17 +1211,42 @@ function mostrarModalKey() {
 
 function cerrarModalKey() {
     document.getElementById('modalKey').classList.add('hidden');
-    document.getElementById('keyInput').value = '';
+    document.getElementById('usuarioInput').value = '';
+    document.getElementById('passwordInput').value = '';
 }
 
-function verificarKey() {
-    const key = document.getElementById('keyInput').value;
-    if (key === 'admin123') {
-        document.getElementById('modalKey').classList.add('hidden');
-        document.getElementById('votingArea').classList.add('hidden');
-        document.getElementById('configArea').classList.remove('hidden');
-    } else {
-        alert('Clave incorrecta');
+async function verificarKey() {
+    const usuario = document.getElementById('usuarioInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+    
+    if (!usuario || !password) {
+        alert('Por favor ingrese usuario y contraseña');
+        return;
+    }
+    
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/validar_admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('modalKey').classList.add('hidden');
+            document.getElementById('usuarioInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('votingArea').classList.add('hidden');
+            document.getElementById('configArea').classList.remove('hidden');
+            // Cargar automáticamente la lista de votantes al entrar
+            await cargarTodosVotantes();
+        } else {
+            alert('Error: ' + (data.error || 'Credenciales inválidas'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al validar credenciales');
     }
 }
 
@@ -1216,4 +1266,9 @@ function mostrarTab(tabName) {
     }
     
     event.target.classList.add('active');
+    
+    // Cargar votantes automáticamente cuando se hace clic en la pestaña "Votantes"
+    if (tabName === 'votantes') {
+        cargarTodosVotantes();
+    }
 }

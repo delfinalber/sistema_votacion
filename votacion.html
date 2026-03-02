@@ -302,6 +302,12 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        .modal-content p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 15px;
@@ -966,6 +972,20 @@
 <body>
     <div class="banner-container">
         <img src="Votaciones/Img/baner.png" alt="Banner Institucional" class="banner-img">
+    </div>
+
+    <!-- MODAL DE ACCESO A CONFIGURACIÓN -->
+    <div id="modalKey" class="modal hidden">
+        <div class="modal-content">
+            <h3>🔐 Acceso a Configuración</h3>
+            <p>Ingrese sus credenciales de administrador</p>
+            <input type="text" id="usuarioInput" placeholder="Usuario" onkeypress="if(event.key==='Enter') document.getElementById('passwordInput').focus()">
+            <input type="password" id="passwordInput" placeholder="Contraseña" onkeypress="if(event.key==='Enter') verificarKey()">
+            <div class="modal-buttons">
+                <button onclick="cerrarModalKey()" class="btn-cancelar">Cancelar</button>
+                <button onclick="verificarKey()" class="btn-agregar">Acceder</button>
+            </div>
+        </div>
     </div>
 
     <div id="votingArea" class="area-votacion">
