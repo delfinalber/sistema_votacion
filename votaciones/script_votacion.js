@@ -97,26 +97,56 @@ async function cargarVotantes() {
 }
 
 // ======================================
+// CARGAR TODOS LOS VOTANTES DEL API
+// ======================================
+async function cargarTodosVotantes() {
+    try {
+        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php';
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.success && data.votantes) {
+            mostrarListaVotantes(data.votantes);
+        } else {
+            const listaDiv = document.getElementById('listaVotantesDiv');
+            listaDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">No hay votantes registrados</p>';
+        }
+    } catch (error) {
+        console.error('Error al cargar votantes:', error);
+        const listaDiv = document.getElementById('listaVotantesDiv');
+        listaDiv.innerHTML = '<p style="text-align: center; color: #dc3545;">Error al cargar votantes</p>';
+    }
+}
+
+// ======================================
 // MOSTRAR LISTA DE VOTANTES
 // ======================================
 function mostrarListaVotantes(votantes) {
     const listaDiv = document.getElementById('listaVotantesDiv');
     listaDiv.innerHTML = '';
 
-    if (votantes.length === 0) {
-        listaDiv.innerHTML = '<p>No hay votantes registrados</p>';
+    if (!votantes || votantes.length === 0) {
+        listaDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">No hay votantes registrados</p>';
         return;
     }
 
     votantes.forEach(votante => {
         const item = document.createElement('div');
         item.className = 'votante-item';
+        
+        // Determinar estado del voto
+        const estadoVoto = votante.voto_realizado ? '✓ Votó' : 'Pendiente';
+        const colorEstado = votante.voto_realizado ? '#28a745' : '#ffc107';
+        
         item.innerHTML = `
             <div class="votante-info">
                 <strong>${votante.nombre}</strong>
                 <small>Código: ${votante.id_votante}</small>
             </div>
-            <button class="btn-eliminar" onclick="eliminarVotante('${votante.id_votante}')">Eliminar</button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 12px; color: ${colorEstado}; font-weight: 600;">${estadoVoto}</span>
+                <button class="btn-eliminar" onclick="eliminarVotanteAdmin('${votante.id_votante}')">Eliminar</button>
+            </div>
         `;
         listaDiv.appendChild(item);
     });
@@ -150,7 +180,7 @@ async function agregarVotanteIndividual() {
             alert('✓ Votante agregado correctamente');
             document.getElementById('nuevoNombreVotante').value = '';
             document.getElementById('nuevoCódigoVotante').value = '';
-            await cargarVotantes();
+            await cargarTodosVotantes();
         } else {
             alert('Error: ' + (data.message || data.error || 'Error desconocido'));
         }
@@ -240,6 +270,33 @@ async function eliminarVotante(idVotante) {
 }
 
 // ======================================
+// ELIMINAR VOTANTE (DESDE ADMIN)
+// ======================================
+async function eliminarVotanteAdmin(idVotante) {
+    if (!confirm('¿Está seguro de eliminar este votante? Se eliminarán todos sus registros.')) return;
+
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_votante.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_votante: idVotante })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('✓ Votante eliminado correctamente');
+            await cargarTodosVotantes();
+        } else {
+            alert('Error: ' + (data.error || data.message));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al eliminar votante');
+    }
+}
+
+// ======================================
 // CARGAR CANDIDATOS PARA ADMIN
 // ======================================
 async function cargarCandidatosAdmin() {
@@ -265,16 +322,51 @@ function mostrarListaCandidatos(tipo, candidatos) {
     const containerDiv = document.getElementById(elementId);
     containerDiv.innerHTML = '';
 
+    if (candidatos.length === 0) {
+        containerDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">No hay candidatos registrados</p>';
+        return;
+    }
+
     candidatos.forEach(candidato => {
         const item = document.createElement('div');
         item.className = 'candidato-item';
-        item.innerHTML = `
-            <div>
-                <strong>${candidato.nombre}</strong>
-                <br><small>Número: ${candidato.numero}</small>
-            </div>
-            <button class="btn-eliminar" onclick="eliminarCandidato(${candidato.id_candidato})">Eliminar</button>
+        
+        // Crear elemento de foto
+        const fotoDiv = document.createElement('div');
+        fotoDiv.style.display = 'flex';
+        fotoDiv.style.alignItems = 'center';
+        fotoDiv.style.flex = '1';
+        
+        if (candidato.foto) {
+            const fotoImg = document.createElement('img');
+            fotoImg.src = candidato.foto;
+            fotoImg.alt = candidato.nombre;
+            fotoImg.className = 'candidato-foto';
+            fotoDiv.appendChild(fotoImg);
+        } else {
+            const fotoPlaceholder = document.createElement('div');
+            fotoPlaceholder.className = 'candidato-foto sin-foto';
+            fotoPlaceholder.innerHTML = '<i class="fas fa-user"></i>';
+            fotoDiv.appendChild(fotoPlaceholder);
+        }
+        
+        // Crear elemento de información
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'candidato-info';
+        infoDiv.innerHTML = `
+            <strong>${candidato.nombre}</strong>
+            <small>Número: ${candidato.numero}</small>
         `;
+        fotoDiv.appendChild(infoDiv);
+        
+        // Crear botón eliminar
+        const btnEliminar = document.createElement('button');
+        btnEliminar.className = 'btn-eliminar';
+        btnEliminar.textContent = 'Eliminar';
+        btnEliminar.onclick = () => eliminarCandidato(candidato.id_candidato, tipo);
+        
+        item.appendChild(fotoDiv);
+        item.appendChild(btnEliminar);
         containerDiv.appendChild(item);
     });
 }
@@ -307,6 +399,9 @@ async function agregarCandidato(cargo) {
     const numero = cargo === 'Personero'
         ? document.getElementById('numeroPersonero').value.trim()
         : document.getElementById('numeroContralor').value.trim();
+    const fotoInput = cargo === 'Personero'
+        ? document.getElementById('fotoPersonero')
+        : document.getElementById('fotoContralor');
 
     if (!nombre || !numero) {
         alert('Por favor completa todos los campos');
@@ -314,23 +409,37 @@ async function agregarCandidato(cargo) {
     }
 
     try {
+        // Crear FormData para enviar archivos
+        const formData = new FormData();
+        formData.append('cargo', cargo);
+        formData.append('nombre', nombre);
+        formData.append('numero', numero);
+        
+        // Agregar imagen si existe
+        if (fotoInput.files.length > 0) {
+            formData.append('foto', fotoInput.files[0]);
+        }
+
         const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_candidato.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nombre: nombre,
-                numero: numero,
-                cargo: cargo
-            })
+            body: formData
+            // No establecer Content-Type, el navegador lo hace automáticamente
         });
 
         const data = await response.json();
 
         if (data.success) {
             alert('✓ Candidato agregado correctamente');
+            // Limpiar campos
+            document.getElementById('nombrePersonero').value = '';
+            document.getElementById('numeroPersonero').value = '';
+            document.getElementById('fotoPersonero').value = '';
+            document.getElementById('nombreContralor').value = '';
+            document.getElementById('numeroContralor').value = '';
+            document.getElementById('fotoContralor').value = '';
             await cargarCandidatosAdmin();
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + data.error || data.message);
         }
     } catch (error) {
         console.error('Error:', error);
@@ -341,8 +450,8 @@ async function agregarCandidato(cargo) {
 // ======================================
 // ELIMINAR CANDIDATO
 // ======================================
-async function eliminarCandidato(idCandidato) {
-    if (!confirm('¿Eliminar este candidato?')) return;
+async function eliminarCandidato(idCandidato, tipo) {
+    if (!confirm('¿Está seguro de eliminar este candidato? Se eliminarán todos sus registros.')) return;
 
     try {
         const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_candidato.php', {
@@ -354,10 +463,10 @@ async function eliminarCandidato(idCandidato) {
         const data = await response.json();
 
         if (data.success) {
-            alert('✓ Candidato eliminado');
+            alert('✓ Candidato eliminado correctamente');
             await cargarCandidatosAdmin();
         } else {
-            alert('Error: ' + data.message);
+            alert('Error: ' + (data.error || data.message || 'No se pudo eliminar el candidato'));
         }
     } catch (error) {
         console.error('Error:', error);
@@ -821,6 +930,11 @@ function mostrarTab(tabName) {
     }
     
     event.target.classList.add('active');
+    
+    // Cargar datos específicos según la pestaña
+    if (tabName === 'votantes') {
+        cargarTodosVotantes();
+    }
 }
 
 // ======================================
