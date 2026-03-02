@@ -6,6 +6,8 @@ let candidatos = {
     personeros: [],
     contralores: []
 };
+let temporizadorReinicioVotacion = null;
+let segundosReinicioVotacion = 30;
 
 // ======================================
 // CARGAR CANDIDATOS Y DATOS AL INICIAR
@@ -486,11 +488,34 @@ async function actualizarFechaVotacion() {
     }
 
     try {
-        localStorage.setItem('fechaVotacion', new Date(fecha).toISOString());
+        localStorage.setItem('fechaVotacion', fecha);
         alert('✓ Fecha actualizada correctamente');
     } catch (error) {
         alert('Error al actualizar fecha');
     }
+}
+
+function cargarFechaVotacionEnSistema() {
+    const input = document.getElementById('fechaVotacionInput');
+    if (!input) return;
+
+    const fechaGuardada = localStorage.getItem('fechaVotacion');
+    if (!fechaGuardada) return;
+
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(fechaGuardada)) {
+        input.value = fechaGuardada;
+        return;
+    }
+
+    const fecha = new Date(fechaGuardada);
+    if (Number.isNaN(fecha.getTime())) return;
+
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    const hours = String(fecha.getHours()).padStart(2, '0');
+    const minutes = String(fecha.getMinutes()).padStart(2, '0');
+    input.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 // ======================================
@@ -629,25 +654,202 @@ async function exportarResultadosExcel() {
 // ======================================
 // REINICIAR VOTACIÓN
 // ======================================
-async function reiniciarVotacionSistema() {
-    if (!confirm('⚠️ ¿Estás seguro? Esto eliminará todos los votos registrados.')) return;
+function reiniciarVotacionSistema() {
+    abrirModalReinicioVotacion();
+}
+
+function validarCredencialesReinicio(usuario, password) {
+    if (!usuario || !password) {
+        return 'Debes ingresar usuario y contraseña';
+    }
+
+    if (usuario.length > 100 || password.length > 100) {
+        return 'Credenciales inválidas';
+    }
+
+    if (!/^[A-Za-z0-9._@-]{3,100}$/.test(usuario)) {
+        return 'Usuario inválido';
+    }
+
+    return null;
+}
+
+function abrirModalReinicioVotacion() {
+    const modal = document.getElementById('modalReinicioVotacion');
+    const usuarioInput = document.getElementById('usuarioAdministradorReinicio');
+    const passwordInput = document.getElementById('passwordAdministradorReinicio');
+    const mensaje = document.getElementById('mensajeReinicioVotacion');
+    const btnConfirmar = document.getElementById('btnConfirmarReinicioVotacion');
+
+    if (!modal || !usuarioInput || !passwordInput) return;
+
+    usuarioInput.value = '';
+    passwordInput.value = '';
+    if (mensaje) {
+        mensaje.style.display = 'none';
+        mensaje.textContent = '';
+    }
+    if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+    }
+
+    segundosReinicioVotacion = 30;
+    actualizarTextoTimerReinicio();
+
+    modal.classList.remove('hidden');
+    usuarioInput.focus();
+
+    if (temporizadorReinicioVotacion) {
+        clearInterval(temporizadorReinicioVotacion);
+    }
+
+    temporizadorReinicioVotacion = setInterval(() => {
+        segundosReinicioVotacion -= 1;
+        actualizarTextoTimerReinicio();
+
+        if (segundosReinicioVotacion <= 0) {
+            cerrarModalReinicioVotacion();
+            alert('Tiempo agotado. Vuelve a intentarlo.');
+        }
+    }, 1000);
+}
+
+function actualizarTextoTimerReinicio() {
+    const timer = document.getElementById('timerReinicioVotacion');
+    if (!timer) return;
+    timer.textContent = `Tiempo restante: ${segundosReinicioVotacion}s`;
+}
+
+function cerrarModalReinicioVotacion() {
+    const modal = document.getElementById('modalReinicioVotacion');
+    const usuarioInput = document.getElementById('usuarioAdministradorReinicio');
+    const passwordInput = document.getElementById('passwordAdministradorReinicio');
+    const mensaje = document.getElementById('mensajeReinicioVotacion');
+    const btnConfirmar = document.getElementById('btnConfirmarReinicioVotacion');
+
+    if (temporizadorReinicioVotacion) {
+        clearInterval(temporizadorReinicioVotacion);
+        temporizadorReinicioVotacion = null;
+    }
+
+    if (modal) modal.classList.add('hidden');
+    if (usuarioInput) usuarioInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (mensaje) {
+        mensaje.style.display = 'none';
+        mensaje.textContent = '';
+        mensaje.style.color = '#666';
+    }
+    if (btnConfirmar) {
+        btnConfirmar.disabled = false;
+    }
+}
+
+function mostrarMensajeModalReinicio(texto, esError = false) {
+    const mensaje = document.getElementById('mensajeReinicioVotacion');
+    if (!mensaje) return;
+
+    mensaje.style.display = 'block';
+    mensaje.textContent = texto;
+    mensaje.style.color = esError ? '#dc3545' : '#2e7d32';
+}
+
+function limpiarEstadoDespuesDeReinicio() {
+    document.querySelectorAll('input').forEach(input => {
+        if (input.type !== 'button' && input.type !== 'submit' && input.type !== 'reset') {
+            input.value = '';
+        }
+    });
 
     try {
+        sessionStorage.clear();
+        localStorage.clear();
+    } catch (error) {
+        console.warn('No se pudo limpiar storage:', error);
+    }
+
+    if (typeof caches !== 'undefined' && caches.keys) {
+        caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))).catch(() => {});
+    }
+
+    try {
+        history.replaceState(null, '', window.location.pathname);
+    } catch (error) {
+        console.warn('No se pudo limpiar historial:', error);
+    }
+}
+
+async function confirmarReinicioVotacionSistema() {
+    const usuarioInput = document.getElementById('usuarioAdministradorReinicio');
+    const passwordInput = document.getElementById('passwordAdministradorReinicio');
+    const btnConfirmar = document.getElementById('btnConfirmarReinicioVotacion');
+
+    if (!usuarioInput || !passwordInput) return;
+    if (btnConfirmar && btnConfirmar.disabled) return;
+
+    const usuario = usuarioInput.value.trim();
+    const password = passwordInput.value;
+
+    const errorCredenciales = validarCredencialesReinicio(usuario, password);
+    if (errorCredenciales) {
+        mostrarMensajeModalReinicio(errorCredenciales, true);
+        return;
+    }
+
+    if (btnConfirmar) {
+        btnConfirmar.disabled = true;
+    }
+
+    mostrarMensajeModalReinicio('Validando credenciales...');
+
+    try {
+        const validarResponse = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/validar_admin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuario_adminstrador: usuario,
+                password_adminstrador: password
+            })
+        });
+
+        const validarData = await validarResponse.json();
+
+        if (!validarResponse.ok || !validarData.success) {
+            mostrarMensajeModalReinicio(validarData.error || 'Credenciales inválidas', true);
+            passwordInput.value = '';
+            return;
+        }
+
+        mostrarMensajeModalReinicio('Reiniciando votación...');
+
         const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/reiniciar_votacion.php', {
-            method: 'POST'
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                usuario_adminstrador: usuario,
+                password_adminstrador: password
+            })
         });
 
         const data = await response.json();
 
         if (data.success) {
+            cerrarModalReinicioVotacion();
+            limpiarEstadoDespuesDeReinicio();
             alert('✓ Votación reiniciada correctamente');
             await cargarResultados();
         } else {
-            alert('Error: ' + data.message);
+            mostrarMensajeModalReinicio('Error: ' + (data.error || data.message || 'No se pudo reiniciar'), true);
+            passwordInput.value = '';
         }
     } catch (error) {
-        alert('Error al reiniciar votación');
+        mostrarMensajeModalReinicio('Error al reiniciar votación', true);
+        passwordInput.value = '';
         console.error('Error:', error);
+    } finally {
+        if (btnConfirmar) {
+            btnConfirmar.disabled = false;
+        }
     }
 }
 
@@ -785,6 +987,18 @@ async function enviarVoto() {
 // ======================================
 window.__intervaloResultadosAdmin = null;
 
+function obtenerFechaHoraLocalSistema() {
+    return new Date().toLocaleString('es-CO', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+}
+
 function detenerActualizacionResultadosAdmin() {
     if (window.__intervaloResultadosAdmin) {
         clearInterval(window.__intervaloResultadosAdmin);
@@ -820,6 +1034,8 @@ function mostrarTab(tab) {
         cargarTabResultados();
         detenerActualizacionResultadosAdmin();
         window.__intervaloResultadosAdmin = setInterval(cargarTabResultados, 3000);
+    } else if (tab === 'sistema') {
+        cargarFechaVotacionEnSistema();
     } else {
         detenerActualizacionResultadosAdmin();
     }
@@ -864,7 +1080,7 @@ async function cargarTabResultados() {
             `;
         });
 
-        html += `<p style="margin-top: 12px; color: #666; font-size: 12px;">Actualizado: ${data.actualizado_en}</p>`;
+        html += `<p style="margin-top: 12px; color: #666; font-size: 12px;">Actualizado: ${obtenerFechaHoraLocalSistema()}</p>`;
         html += '</div>';
         cont.innerHTML = html;
     } catch (error) {
@@ -1038,4 +1254,32 @@ async function verificarKey() {
         alert('Error al validar credenciales');
     }
 }
+
+document.addEventListener('keydown', function(event) {
+    if (event.key !== 'Escape') return;
+
+    const modalReinicio = document.getElementById('modalReinicioVotacion');
+    if (modalReinicio && !modalReinicio.classList.contains('hidden')) {
+        cerrarModalReinicioVotacion();
+        return;
+    }
+
+    const modalKey = document.getElementById('modalKey');
+    if (modalKey && !modalKey.classList.contains('hidden')) {
+        cerrarModalKey();
+    }
+});
+
+document.addEventListener('click', function(event) {
+    const modalReinicio = document.getElementById('modalReinicioVotacion');
+    if (modalReinicio && !modalReinicio.classList.contains('hidden') && event.target === modalReinicio) {
+        cerrarModalReinicioVotacion();
+        return;
+    }
+
+    const modalKey = document.getElementById('modalKey');
+    if (modalKey && !modalKey.classList.contains('hidden') && event.target === modalKey) {
+        cerrarModalKey();
+    }
+});
 

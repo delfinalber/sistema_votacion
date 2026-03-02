@@ -3,6 +3,18 @@
 // ======================================
 window.__intervaloResultadosAdmin = null;
 
+function obtenerFechaHoraLocalSistema() {
+    return new Date().toLocaleString('es-CO', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+}
+
 function detenerActualizacionResultadosAdmin() {
     if (window.__intervaloResultadosAdmin) {
         clearInterval(window.__intervaloResultadosAdmin);
@@ -86,7 +98,7 @@ async function cargarTabResultados() {
             `;
         });
 
-        html += `<p class="info-text">Actualizado: ${data.actualizado_en}</p>`;
+        html += `<p class="info-text">Actualizado: ${obtenerFechaHoraLocalSistema()}</p>`;
         html += '</div>';
 
         cont.innerHTML = html;
@@ -123,7 +135,7 @@ async function exportarResultadosExcel() {
         });
 
         datosExcel.push([]);
-        datosExcel.push(['Actualizado', data.actualizado_en, '']);
+        datosExcel.push(['Actualizado', obtenerFechaHoraLocalSistema(), '']);
 
         const ws = XLSX.utils.aoa_to_sheet(datosExcel);
 

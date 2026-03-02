@@ -766,11 +766,24 @@ function actualizarResultadosPreliminares() {
 
 // Cargar configuración del sistema
 function cargarConfiguracionSistema() {
-    const fechaInput = document.getElementById('fechaVotacion');
+    const fechaInput = document.getElementById('fechaVotacion') || document.getElementById('fechaVotacionInput');
     if (fechaInput) {
         const fechaGuardada = localStorage.getItem('fechaVotacion');
         if (fechaGuardada) {
-            fechaInput.value = fechaGuardada;
+            const formatoLocal = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+            if (formatoLocal.test(fechaGuardada)) {
+                fechaInput.value = fechaGuardada;
+            } else {
+                const fecha = new Date(fechaGuardada);
+                if (!Number.isNaN(fecha.getTime())) {
+                    const year = fecha.getFullYear();
+                    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+                    const day = String(fecha.getDate()).padStart(2, '0');
+                    const hours = String(fecha.getHours()).padStart(2, '0');
+                    const minutes = String(fecha.getMinutes()).padStart(2, '0');
+                    fechaInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                }
+            }
         } else {
             // Fecha por defecto: 15 de abril de 2025, 7:00 AM
             fechaInput.value = '2025-04-15T07:00';
@@ -780,7 +793,7 @@ function cargarConfiguracionSistema() {
 
 // Actualizar fecha de votación
 function actualizarFechaVotacion() {
-    const fechaInput = document.getElementById('fechaVotacion');
+    const fechaInput = document.getElementById('fechaVotacion') || document.getElementById('fechaVotacionInput');
     if (!fechaInput || !fechaInput.value) {
         mostrarMensaje('Por favor selecciona una fecha válida', 'error');
         return;

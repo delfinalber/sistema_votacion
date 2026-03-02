@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 02-03-2026 a las 17:42:48
+-- Tiempo de generación: 02-03-2026 a las 18:44:38
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `adminstrador`
+-- Estructura de tabla para la tabla `administrador`
 --
 
-CREATE TABLE `adminstrador` (
+CREATE TABLE `administrador` (
   `id_administrador` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `usuario_admin` varchar(100) NOT NULL,
@@ -36,10 +36,10 @@ CREATE TABLE `adminstrador` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish2_ci;
 
 --
--- Volcado de datos para la tabla `adminstrador`
+-- Volcado de datos para la tabla `administrador`
 --
 
-INSERT INTO `adminstrador` (`id_administrador`, `nombre`, `usuario_admin`, `password_admin`, `fecha`) VALUES
+INSERT INTO `administrador` (`id_administrador`, `nombre`, `usuario_admin`, `password_admin`, `fecha`) VALUES
 (1, 'alber delfin peña ortigoza', 'rosa123', 'rosa123', '2026-03-01 22:42:39');
 
 -- --------------------------------------------------------
@@ -113,7 +113,7 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 ('1006111002', 'Santiago Moreno Jiménez', 0),
 ('1006111003', 'Isabella Romero Vargas', 0),
 ('1006111004', 'Mateo Castillo Castro', 0),
-('1006111101', 'Ana María López', 1),
+('1006111101', 'Ana María López', 0),
 ('1006111102', 'Juan Carlos Rodríguez', 0),
 ('1006111103', 'Sofía Martínez Pérez', 0),
 ('1006111104', 'Luis Alberto García', 0),
@@ -121,13 +121,13 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 ('1006111106', 'Daniel Hernández Ruiz', 0),
 ('1029888675', 'kenssy Alexandra', 0),
 ('1072662379', 'Danna Chinchia Quintanilla', 0),
-('1075217491', 'Maria Paula Gonzales', 1),
+('1075217491', 'Maria Paula Gonzales', 0),
 ('1075252300', 'Luz Elena Polania', 0),
 ('1075795095', 'Martin Julian Torres', 0),
 ('1075796670', 'Juan David', 0),
 ('1076511048', 'Juan Jose Perdomo Gonzales', 0),
 ('10766911001', 'Juan Paulo', 0),
-('1077232828', 'JHON EDISON BASTIDAS BETANCUR', 1),
+('1077232828', 'JHON EDISON BASTIDAS BETANCUR', 0),
 ('1077235045', 'Mariana Isabela Ramirez', 0),
 ('1077246156', 'Angela Victoria Ortega', 0),
 ('1077725987', 'fabian quintero', 0),
@@ -137,7 +137,9 @@ INSERT INTO `votantes` (`id_votante`, `nombre`, `voto_realizado`) VALUES
 ('12345', 'ALBER DELFIN PEÑA ORTIGOZA', 0),
 ('1234567891', 'pamela', 0),
 ('1586248598', 'Maria Paula', 0),
-('7722975', 'luz elena', 0);
+('7722975', 'luz elena', 0),
+('TST_RST2_20260302182454', 'TEST RESET2', 0),
+('TST_RST_20260302182423', 'TEST RESET', 0);
 
 -- --------------------------------------------------------
 
@@ -155,25 +157,13 @@ CREATE TABLE `votos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish2_ci;
 
 --
--- Volcado de datos para la tabla `votos`
---
-
-INSERT INTO `votos` (`id_voto`, `id_candidato`, `id_votante`, `es_blanco`, `valor_voto`, `fecha_voto`) VALUES
-(43, 0, '1077232828', 1, 1, '2026-03-02 16:27:34'),
-(44, 10, '1077232828', 0, 1, '2026-03-02 16:27:34'),
-(45, 7, '1075217491', 0, 1, '2026-03-02 16:28:32'),
-(46, 0, '1075217491', 1, 1, '2026-03-02 16:28:32'),
-(47, 8, '1006111101', 0, 1, '2026-03-02 16:30:01'),
-(48, 10, '1006111101', 0, 1, '2026-03-02 16:30:01');
-
---
 -- Índices para tablas volcadas
 --
 
 --
--- Indices de la tabla `adminstrador`
+-- Indices de la tabla `administrador`
 --
-ALTER TABLE `adminstrador`
+ALTER TABLE `administrador`
   ADD PRIMARY KEY (`id_administrador`);
 
 --
@@ -207,9 +197,9 @@ ALTER TABLE `votos`
 --
 
 --
--- AUTO_INCREMENT de la tabla `adminstrador`
+-- AUTO_INCREMENT de la tabla `administrador`
 --
-ALTER TABLE `adminstrador`
+ALTER TABLE `administrador`
   MODIFY `id_administrador` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
@@ -228,7 +218,7 @@ ALTER TABLE `usuario`
 -- AUTO_INCREMENT de la tabla `votos`
 --
 ALTER TABLE `votos`
-  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id_voto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

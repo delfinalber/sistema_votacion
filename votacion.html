@@ -308,6 +308,18 @@
             font-size: 14px;
         }
 
+        .timer-reinicio {
+            font-size: 12px;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .mensaje-reinicio {
+            display: none;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 15px;
@@ -984,6 +996,21 @@
             <div class="modal-buttons">
                 <button onclick="cerrarModalKey()" class="btn-cancelar">Cancelar</button>
                 <button onclick="verificarKey()" class="btn-agregar">Acceder</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalReinicioVotacion" class="modal hidden">
+        <div class="modal-content">
+            <h3>⚠️ Confirmar Reinicio de Votación</h3>
+            <p>Ingrese credenciales de administrador para continuar</p>
+            <p id="timerReinicioVotacion" class="timer-reinicio">Tiempo restante: 30s</p>
+            <p id="mensajeReinicioVotacion" class="mensaje-reinicio"></p>
+            <input type="text" id="usuarioAdministradorReinicio" placeholder="Usuario administrador" maxlength="100" autocomplete="off" onkeypress="if(event.key==='Enter') document.getElementById('passwordAdministradorReinicio').focus()">
+            <input type="password" id="passwordAdministradorReinicio" placeholder="Password administrador" maxlength="100" autocomplete="new-password" onkeypress="if(event.key==='Enter') confirmarReinicioVotacionSistema()">
+            <div class="modal-buttons">
+                <button onclick="cerrarModalReinicioVotacion()" class="btn-cancelar">Cancelar</button>
+                <button id="btnConfirmarReinicioVotacion" onclick="confirmarReinicioVotacionSistema()" class="btn-agregar">Confirmar</button>
             </div>
         </div>
     </div>
