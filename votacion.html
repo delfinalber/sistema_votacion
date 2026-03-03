@@ -180,11 +180,54 @@
 
         .candidato-option input[type="radio"] {
             accent-color: #2e7d32;
+            margin-top: 2px;
         }
 
         .candidato-option input[type="radio"]:checked + span {
             color: #2e7d32;
             font-weight: 600;
+        }
+
+        .candidato-option-contenido {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .candidato-option-foto {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .candidato-option-foto-placeholder {
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .candidato-option-texto {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            gap: 3px;
+        }
+
+        .candidato-option-texto strong {
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .candidato-option-texto small {
+            color: #666;
+            font-size: 12px;
         }
 
         .voto-blanco {
@@ -1239,7 +1282,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="votaciones/script_votacion.js?v=20260308"></script>
+    <script src="votaciones/script_votacion.js?v=20260303g"></script>
     <script src="votaciones/resultados_tiempo_real.js?v=20260302"></script>
 </body>
 </html>
