@@ -4,38 +4,35 @@
 // ======================================
 define('DBHOST', 'localhost');
 define('DBUSER', 'root');
-define('DBPASS', '');  // ¡Cambia esto!
+define('DBPASS', '');
 define('DBNAME', 'votaciones');
 define('DBCHARSET', 'utf8mb4');
-define('DBPORT', 3307);  // Puerto estándar MySQL/MariaDB
+define('DBPORT', 3307);
 
 // ======================================
 // CREAR LA CONEXIÓN
 // ======================================
-// Si DBPORT está definido, usa ese puerto, si no usa el predeterminado
-if (defined('DBPORT')) {
-    $conn = new mysqli(DBHOST, DBUSER, DBPASS, DBNAME, DBPORT);
-} else {
-    $conn = new mysqli(DBHOST, DBUSER, DBPASS, DBNAME);
-}
+$conn = new mysqli(DBHOST, DBUSER, DBPASS, DBNAME, DBPORT);
 
 // ======================================
 // VERIFICAR LA CONEXIÓN
 // ======================================
 if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+	throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
 }
 
 // ======================================
 // ESTABLECER CODIFICACIÓN UTF-8
 // ======================================
-$conn->set_charset('utf8mb4');
+$conn->set_charset(DBCHARSET);
 
 // ======================================
 // FUNCIÓN PARA OBTENER LA CONEXIÓN
 // ======================================
 function getConnection() {
-    global $conn;
-    return $conn;
+	global $conn;
+	return $conn;
 }
 ?>
+
+

@@ -110,7 +110,7 @@ window.addEventListener('load', async function() {
 // ======================================
 async function cargarCandidatos() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_candidatos.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/obtener_candidatos.php';
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -130,7 +130,7 @@ async function cargarCandidatos() {
 // ======================================
 async function cargarVotantes() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php?t=' + Date.now();
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
         const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
@@ -147,7 +147,7 @@ async function cargarVotantes() {
 // ======================================
 async function cargarTodosVotantes() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/get_votantes.php?t=' + Date.now();
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
         const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
@@ -216,7 +216,7 @@ async function agregarVotanteIndividual() {
     }
 
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_votante.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/add_votante.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -445,7 +445,7 @@ async function confirmarCargaVotantesExcel() {
     mostrarMensajeModalCargaVotantesExcel('Validando credenciales y cargando registros...');
 
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/cargar_votantes_excel.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/cargar_votantes_excel.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -497,7 +497,7 @@ async function eliminarVotante(idVotante) {
     if (!confirm('¿Eliminar este votante?')) return;
 
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_votante.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/delete_votante.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_votante: idVotante })
@@ -524,7 +524,7 @@ async function eliminarVotanteAdmin(idVotante) {
     if (!confirm('¿Está seguro de eliminar este votante? Se eliminarán todos sus registros.')) return;
 
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_votante.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/delete_votante.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_votante: idVotante })
@@ -549,7 +549,7 @@ async function eliminarVotanteAdmin(idVotante) {
 // ======================================
 async function cargarCandidatosAdmin() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_candidatos.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/obtener_candidatos.php';
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -668,7 +668,7 @@ async function agregarCandidato(cargo) {
             formData.append('foto', fotoInput.files[0]);
         }
 
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/add_candidato.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/add_candidato.php', {
             method: 'POST',
             body: formData
             // No establecer Content-Type, el navegador lo hace automáticamente
@@ -702,7 +702,7 @@ async function eliminarCandidato(idCandidato, tipo) {
     if (!confirm('¿Está seguro de eliminar este candidato? Se eliminarán todos sus registros.')) return;
 
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/delete_candidato.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/delete_candidato.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_candidato: idCandidato })
@@ -769,7 +769,7 @@ function cargarFechaVotacionEnSistema() {
 // ======================================
 async function cargarResultados() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/obtener_consolidado.php';
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -857,7 +857,7 @@ function mostrarResultadosAdmin(data) {
 // ======================================
 async function exportarResultadosExcel() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/obtener_consolidado.php';
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -899,7 +899,7 @@ async function exportarResultadosExcel() {
 
 async function exportarRegistroMesaExcel() {
     try {
-        const apiUrl = `${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
+        const apiUrl = `${window.location.origin}/sistema_votacion/votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
         const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
@@ -949,7 +949,7 @@ async function exportarRegistroMesaExcel() {
 
 async function exportarRegistroMesaCSV() {
     try {
-        const apiUrl = `${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
+        const apiUrl = `${window.location.origin}/sistema_votacion/votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`;
         const response = await fetch(apiUrl, { cache: 'no-store' });
         const data = await response.json();
 
@@ -1026,9 +1026,9 @@ async function exportarRegistroMesaPDF() {
         }
 
         const [respMesa, respResultados, respConsolidado] = await Promise.all([
-            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`, { cache: 'no-store' }),
-            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_resultados_votos.php?t=${Date.now()}`, { cache: 'no-store' }),
-            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
+            fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_registro_mesa.php?t=${Date.now()}`, { cache: 'no-store' }),
+            fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_resultados_votos.php?t=${Date.now()}`, { cache: 'no-store' }),
+            fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
         ]);
 
         const dataMesa = await respMesa.json();
@@ -1371,7 +1371,7 @@ async function confirmarReinicioVotacionSistema() {
     mostrarMensajeModalReinicio('Validando credenciales...');
 
     try {
-        const validarResponse = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/validar_admin.php', {
+        const validarResponse = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/validar_admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1390,7 +1390,7 @@ async function confirmarReinicioVotacionSistema() {
 
         mostrarMensajeModalReinicio('Reiniciando votación...');
 
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/reiniciar_votacion.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/reiniciar_votacion.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1433,7 +1433,7 @@ async function verificarCodigo() {
     }
 
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/validar_votante.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/validar_votante.php';
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1514,7 +1514,7 @@ async function enviarVoto() {
 
     try {
         // Registrar ambos votos en una transacción
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/registrar_votos_completo.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/registrar_votos_completo.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1623,7 +1623,7 @@ async function cargarTabResultados() {
     try {
         const [resResultados, resConsolidado] = await Promise.all([
             fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_resultados_votos.php?t=${Date.now()}`, { cache: 'no-store' }),
-            fetch(`${window.location.origin}/sistema_votacion/Votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
+            fetch(`${window.location.origin}/sistema_votacion/votaciones/api/obtener_consolidado.php?t=${Date.now()}`, { cache: 'no-store' })
         ]);
 
         const data = await resResultados.json();
@@ -1729,7 +1729,7 @@ async function mostrarResultadosPreliminares() {
 // ======================================
 async function actualizarResultadosPreliminares() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/obtener_consolidado.php';
+        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/obtener_consolidado.php';
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -1850,7 +1850,7 @@ async function verificarKey() {
     }
     
     try {
-        const response = await fetch(window.location.origin + '/sistema_votacion/Votaciones/api/validar_admin.php', {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/validar_admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ usuario, password })

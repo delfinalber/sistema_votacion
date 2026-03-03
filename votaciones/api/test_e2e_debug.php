@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$baseUrl = 'http://localhost/sistema_votacion/Votaciones/api';
+$baseUrl = 'http://localhost/sistema_votacion/votaciones/api';
 $conn = new mysqli('localhost', 'root', '', 'votaciones', 3307);
 $conn->set_charset('utf8mb4');
 

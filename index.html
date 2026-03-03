@@ -666,7 +666,7 @@
 </head>
 <body>
     <div class="header">  
-        <img src="Votaciones/Img/baner.png" alt="Banner Institución Educativa">
+        <img src="votaciones/Img/baner.png" alt="Banner Institución Educativa">
     </div>
 
     <!-- MODAL DE AUTENTICACIÓN DE SESIÓN -->
@@ -1117,7 +1117,7 @@
 
             try {
                 // Construir la URL correcta
-                const apiUrl = window.location.origin + '/sistema_votacion/Votaciones/api/validar_sesion.php';
+                const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/validar_sesion.php';
                 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -1130,7 +1130,18 @@
                     })
                 });
 
-                const data = await response.json();
+                const raw = await response.text();
+                let data = null;
+
+                try {
+                    data = raw ? JSON.parse(raw) : null;
+                } catch (parseError) {
+                    throw new Error('El servidor devolvió una respuesta inválida');
+                }
+
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Respuesta vacía del servidor');
+                }
 
                 if (response.ok && data.success) {
                     // Autenticación exitosa

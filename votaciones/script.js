@@ -10,7 +10,7 @@ let votos = { personero: {}, contralor: {} }; // Se usará para mostrar resultad
 let votantesQueVotaron = new Set();
 
 // Clave de acceso para configuración (se mantiene igual)
-const CLAVE_CONFIG = "admin123";
+//const CLAVE_CONFIG = "admin123";
 
 //--> MODIFICADO: Ahora carga todo desde la base de datos al iniciar.
 document.addEventListener('DOMContentLoaded', async function() {

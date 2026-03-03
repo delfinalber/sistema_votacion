@@ -100,7 +100,7 @@
             resultDiv.className = 'result';
 
             try {
-                const response = await fetch('./Votaciones/api/validar_sesion.php', {
+                const response = await fetch('./votaciones/api/validar_sesion.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -135,7 +135,7 @@
         window.addEventListener('load', async () => {
             console.log('Verificando conexión al API...');
             try {
-                const response = await fetch('./Votaciones/api/validar_sesion.php', {
+                const response = await fetch('./votaciones/api/validar_sesion.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -148,7 +148,7 @@
                 console.log('✓ API Conectado (Status: ' + response.status + ')');
             } catch (error) {
                 console.error('✗ Error de conexión: ' + error.message);
-                alert('⚠️ Error: No se pudo conectar al API\n\nVerifica:\n1. El archivo ./Votaciones/api/validar_sesion.php existe\n2. PHP está habilitado\n3. La BD "votaciones" existe\n\nDetalles: ' + error.message);
+                alert('⚠️ Error: No se pudo conectar al API\n\nVerifica:\n1. El archivo ./votaciones/api/validar_sesion.php existe\n2. PHP está habilitado\n3. La BD "votaciones" existe\n\nDetalles: ' + error.message);
             }
         });
     </script>

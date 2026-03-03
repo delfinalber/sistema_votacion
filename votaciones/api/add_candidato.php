@@ -45,7 +45,7 @@ if (isset($_FILES['foto']) && $_FILES['foto']['error'] !== UPLOAD_ERR_NO_FILE) {
         // Guardar archivo
         if (move_uploaded_file($_FILES['foto']['tmp_name'], $file_path)) {
             // Guardar ruta relativa para la base de datos
-            $foto = 'Votaciones/Img/' . $file_name;
+            $foto = 'votaciones/Img/' . $file_name;
         } else {
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => 'Error al guardar la imagen']);
