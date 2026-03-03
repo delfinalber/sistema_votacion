@@ -58,6 +58,28 @@ function mostrarIndicadorAcceso(texto) {
     }, 1800);
 }
 
+function inicializarEventosAccesoRapido() {
+    const contenedor = document.querySelector('.config-access');
+    if (!contenedor || contenedor.dataset.bindClickDelegado === '1') return;
+
+    contenedor.dataset.bindClickDelegado = '1';
+    contenedor.addEventListener('click', function(event) {
+        const boton = event.target.closest('button');
+        if (!boton) return;
+
+        if (boton.id === 'btnAccesoConfiguracion') {
+            event.preventDefault();
+            abrirTabConfiguracion();
+            return;
+        }
+
+        if (boton.id === 'btnAccesoResultados') {
+            event.preventDefault();
+            abrirTabResultados();
+        }
+    });
+}
+
 function tabCandidatosVisible() {
     const tab = document.getElementById('tabCandidatos');
     const config = document.getElementById('configArea');
@@ -263,6 +285,8 @@ async function abrirConfigAreaSegura(tabObjetivo = 'votantes') {
 // CARGAR CANDIDATOS Y DATOS AL INICIAR
 // ======================================
 window.addEventListener('load', async function() {
+    inicializarEventosAccesoRapido();
+
     // Verificar sesión de administrador
     const autenticado = sessionStorage.getItem('autenticado');
     const configAccessDiv = document.querySelector('.config-access');
