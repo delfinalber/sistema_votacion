@@ -6,6 +6,16 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 require_once 'db.php';
 
+if (!function_exists('getConnection')) {
+    function getConnection(): mysqli {
+        global $conn;
+        if (!isset($conn)) {
+            throw new Exception('No se pudo establecer conexión a la base de datos');
+        }
+        return $conn;
+    }
+}
+
 function obtenerTablaAdministrador(mysqli $conn): string {
     $existeAdministrador = $conn->query("SHOW TABLES LIKE 'administrador'");
     if ($existeAdministrador && $existeAdministrador->num_rows > 0) {
