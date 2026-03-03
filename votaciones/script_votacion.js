@@ -370,15 +370,6 @@ async function cargarVotantes() {
         }
         const response = await fetch(apiUrl, { cache: 'no-store', credentials: 'same-origin' });
 
-        if (response.status === 401) {
-            sessionStorage.removeItem('autenticado');
-            const listaDiv = document.getElementById('listaVotantesDiv');
-            if (listaDiv) {
-                listaDiv.innerHTML = '<p style="text-align: center; color: #dc3545;">Sesión de administrador expirada. Vuelva a iniciar sesión.</p>';
-            }
-            return;
-        }
-
         const data = await response.json();
 
         if (data.success) {
@@ -400,15 +391,6 @@ async function cargarTodosVotantes(idVotante = '') {
             apiUrl += '&id_votante=' + encodeURIComponent(filtroId);
         }
         const response = await fetch(apiUrl, { cache: 'no-store', credentials: 'same-origin' });
-
-        if (response.status === 401) {
-            sessionStorage.removeItem('autenticado');
-            const listaDiv = document.getElementById('listaVotantesDiv');
-            if (listaDiv) {
-                listaDiv.innerHTML = '<p style="text-align: center; color: #dc3545;">Sesión de administrador expirada. Vuelva a iniciar sesión.</p>';
-            }
-            return;
-        }
 
         const data = await response.json();
 
