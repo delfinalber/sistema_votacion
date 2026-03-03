@@ -2,9 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+require_once 'db.php';
+
 $baseUrl = 'http://localhost/sistema_votacion/votaciones/api';
-$conn = new mysqli('localhost', 'root', '', 'votaciones', 3307);
-$conn->set_charset('utf8mb4');
+$conn = getConnection();
 
 function postJson($url, $payload) {
     $opts = [

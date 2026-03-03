@@ -2,6 +2,8 @@
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set('America/Bogota');
 
+require_once 'db.php';
+
 function callGet(string $url): array {
     $ch = curl_init($url);
     curl_setopt_array($ch, [
@@ -51,8 +53,16 @@ function passFail(bool $condition): string {
 }
 
 $baseUrl = 'http://localhost/sistema_votacion/votaciones/api';
-$db = new mysqli('localhost', 'root', '', 'votaciones', 3307);
-$db->set_charset('utf8mb4');
+try {
+    $db = getConnection();
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'fatal' => 'No se pudo conectar a DB',
+        'error' => $e->getMessage(),
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $testRunId = 'TST_FULL_' . date('YmdHis') . '_' . random_int(100, 999);
 $testId = (string) random_int(1000000000, 9999999999);
@@ -72,15 +82,6 @@ $report = [
         'failed' => 0,
     ],
 ];
-
-if ($db->connect_error) {
-    http_response_code(500);
-    echo json_encode([
-        'fatal' => 'No se pudo conectar a DB',
-        'error' => $db->connect_error,
-    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-    exit;
-}
 
 try {
     $step = callPostJson($baseUrl . '/validar_admin.php', [
