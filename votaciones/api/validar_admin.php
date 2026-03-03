@@ -21,12 +21,7 @@ function obtenerTablaAdministrador(mysqli $conn): string {
         return 'administrador';
     }
 
-    $existeAdminstrador = $conn->query("SHOW TABLES LIKE 'adminstrador'");
-    if ($existeAdminstrador && $existeAdminstrador->num_rows > 0) {
-        return 'adminstrador';
-    }
-
-    throw new Exception('No existe la tabla administrador');
+    throw new Exception('No existe la tabla requerida: administrador');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

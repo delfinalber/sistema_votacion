@@ -10,6 +10,8 @@ let temporizadorReinicioVotacion = null;
 let segundosReinicioVotacion = 30;
 let temporizadorCargaVotantesExcel = null;
 let segundosCargaVotantesExcel = 30;
+let temporizadorModalAcceso = null;
+let segundosModalAcceso = 30;
 let cargaVotantesExcelPendiente = null;
 window.__intervaloCandidatosAdmin = null;
 window.__intervaloCandidatosVotacion = null;
@@ -58,6 +60,58 @@ function mostrarIndicadorAcceso(texto) {
     }, 1800);
 }
 
+function actualizarVistaTimerModalAcceso() {
+    const timer = document.getElementById('timerAccesoConfig');
+    if (!timer) return;
+
+    timer.classList.remove('hidden');
+    timer.textContent = `Tiempo restante: ${segundosModalAcceso}s`;
+}
+
+function detenerTimerModalAcceso() {
+    if (temporizadorModalAcceso) {
+        clearInterval(temporizadorModalAcceso);
+        temporizadorModalAcceso = null;
+    }
+}
+
+function iniciarTimerModalAcceso() {
+    detenerTimerModalAcceso();
+    segundosModalAcceso = 30;
+    actualizarVistaTimerModalAcceso();
+
+    temporizadorModalAcceso = setInterval(() => {
+        segundosModalAcceso -= 1;
+        actualizarVistaTimerModalAcceso();
+
+        if (segundosModalAcceso > 0) return;
+
+        detenerTimerModalAcceso();
+        alert('Tiempo de acceso agotado. Intente nuevamente.');
+        cerrarModalKey();
+    }, 1000);
+}
+
+function inicializarEventosModalKey() {
+    const botonAcceder = document.querySelector('#modalKey .btn-agregar');
+    if (botonAcceder && botonAcceder.dataset.bindClick !== '1') {
+        botonAcceder.dataset.bindClick = '1';
+        botonAcceder.addEventListener('click', function(event) {
+            event.preventDefault();
+            verificarKey();
+        });
+    }
+
+    const botonCancelar = document.querySelector('#modalKey .btn-cancelar');
+    if (botonCancelar && botonCancelar.dataset.bindClick !== '1') {
+        botonCancelar.dataset.bindClick = '1';
+        botonCancelar.addEventListener('click', function(event) {
+            event.preventDefault();
+            cerrarModalKey();
+        });
+    }
+}
+
 function inicializarEventosAccesoRapido() {
     const contenedor = document.querySelector('.config-access');
     if (!contenedor || contenedor.dataset.bindClickDelegado === '1') return;
@@ -79,6 +133,11 @@ function inicializarEventosAccesoRapido() {
         }
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    inicializarEventosAccesoRapido();
+    inicializarEventosModalKey();
+});
 
 function tabCandidatosVisible() {
     const tab = document.getElementById('tabCandidatos');
@@ -286,12 +345,15 @@ async function abrirConfigAreaSegura(tabObjetivo = 'votantes') {
 // ======================================
 window.addEventListener('load', async function() {
     inicializarEventosAccesoRapido();
+    inicializarEventosModalKey();
 
     // Verificar sesión de administrador
+    sessionStorage.removeItem('autenticado');
     const autenticado = sessionStorage.getItem('autenticado');
     const configAccessDiv = document.querySelector('.config-access');
-    
-    if (autenticado && autenticado === 'true') {
+
+    const permitirAutoIngreso = false;
+    if (permitirAutoIngreso && autenticado && autenticado === 'true') {
         const sesionValida = await validarSesionAdminServidor();
         if (!sesionValida) {
             ocultarAreaConfiguracion();
@@ -2033,11 +2095,13 @@ function iniciarActualizacionCandidatosAdmin() {
 }
 
 async function abrirTabConfiguracion() {
-    await abrirConfigAreaSegura('votantes');
+    window.__tabObjetivoTrasLogin = 'votantes';
+    mostrarModalKey();
 }
 
 async function abrirTabResultados() {
-    await abrirConfigAreaSegura('resultados');
+    window.__tabObjetivoTrasLogin = 'resultados';
+    mostrarModalKey();
 }
 
 function mostrarTab(tab) {
@@ -2303,12 +2367,19 @@ function volverVotacion() {
 // ======================================
 function mostrarModalKey() {
     document.getElementById('modalKey').classList.remove('hidden');
+    iniciarTimerModalAcceso();
 }
 
 function cerrarModalKey() {
+    detenerTimerModalAcceso();
     document.getElementById('modalKey').classList.add('hidden');
     document.getElementById('usuarioInput').value = '';
     document.getElementById('passwordInput').value = '';
+    const timer = document.getElementById('timerAccesoConfig');
+    if (timer) {
+        timer.classList.add('hidden');
+        timer.textContent = '';
+    }
 }
 
 async function verificarKey() {
@@ -2330,13 +2401,19 @@ async function verificarKey() {
         const data = await response.json();
         
         if (data.success) {
+            detenerTimerModalAcceso();
             sessionStorage.setItem('autenticado', 'true');
             document.getElementById('modalKey').classList.add('hidden');
             document.getElementById('usuarioInput').value = '';
             document.getElementById('passwordInput').value = '';
             const tabObjetivo = window.__tabObjetivoTrasLogin || 'votantes';
             window.__tabObjetivoTrasLogin = 'votantes';
-            await abrirConfigAreaSegura(tabObjetivo);
+            document.getElementById('votingArea')?.classList.add('hidden');
+            document.getElementById('preliminaresArea')?.classList.add('hidden');
+            document.getElementById('configArea')?.classList.remove('hidden');
+            mostrarTab(tabObjetivo);
+            const seccion = tabObjetivo === 'resultados' ? 'Resultados' : 'Configuración';
+            mostrarIndicadorAcceso(`Acceso autorizado: ${seccion}`);
         } else {
             alert('Error: ' + (data.error || 'Credenciales inválidas'));
         }
