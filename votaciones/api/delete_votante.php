@@ -13,6 +13,7 @@ $stmt = $conn->prepare("DELETE FROM votantes WHERE id_votante = ?");
 $stmt->bind_param("s", $id_votante);
 
 if ($stmt->execute()) {
+    @file_put_contents(__DIR__ . '/_votantes_version.txt', (string) time(), LOCK_EX);
     echo json_encode(['success' => true, 'message' => 'Votante eliminado correctamente']);
 } else {
     echo json_encode(['success' => false, 'error' => $stmt->error]);

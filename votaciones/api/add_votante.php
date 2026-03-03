@@ -48,6 +48,7 @@ if (!$stmt) {
 $stmt->bind_param("ss", $id_votante, $nombre);
 
 if ($stmt->execute()) {
+    @file_put_contents(__DIR__ . '/_votantes_version.txt', (string) time(), LOCK_EX);
     echo json_encode(['success' => true, 'message' => 'Votante agregado correctamente']);
 } else {
     http_response_code(500);

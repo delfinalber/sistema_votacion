@@ -172,6 +172,10 @@ try {
     $stmtInsert->close();
     $stmtUpdate->close();
 
+    if ($insertados > 0 || $actualizados > 0) {
+        @file_put_contents(__DIR__ . '/_votantes_version.txt', (string) time(), LOCK_EX);
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Carga finalizada',

@@ -512,6 +512,36 @@
             margin-top: 25px;
         }
 
+        .buscador-votantes {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .buscador-votantes input {
+            flex: 1;
+            min-width: 220px;
+            padding: 10px 12px;
+            border: 2px solid #2e7d32;
+            border-radius: 6px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .buscador-votantes button {
+            background: #2e7d32;
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .buscador-votantes button:hover {
+            background: #1b5e20;
+        }
+
         .lista-votantes h3 {
             color: #2e7d32;
             margin-bottom: 15px;
@@ -1152,6 +1182,11 @@
 
             <div class="lista-votantes">
                 <h3>📋 Lista de Votantes Registrados</h3>
+                <div class="buscador-votantes">
+                    <input type="text" id="buscarVotanteInput" placeholder="Buscar por ID de votante" maxlength="11" inputmode="numeric">
+                    <button type="button" onclick="buscarVotantePendiente()">Buscar</button>
+                    <button type="button" onclick="limpiarBusquedaVotante()">Limpiar</button>
+                </div>
                 <div id="listaVotantesDiv"></div>
             </div>
         </div>
@@ -1282,7 +1317,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="votaciones/script_votacion.js?v=20260303i"></script>
+    <script src="votaciones/script_votacion.js?v=20260303m"></script>
     <script src="votaciones/resultados_tiempo_real.js?v=20260302"></script>
 </body>
 </html>

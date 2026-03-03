@@ -106,6 +106,7 @@ try {
 
     // Confirmar transacción
     $conn->commit();
+    @file_put_contents(__DIR__ . '/_votantes_version.txt', (string) time(), LOCK_EX);
 
     http_response_code(200);
     echo json_encode([

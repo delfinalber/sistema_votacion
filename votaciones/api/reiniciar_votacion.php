@@ -100,6 +100,7 @@ try {
     }
 
     $conn->commit();
+    @file_put_contents(__DIR__ . '/_votantes_version.txt', (string) time(), LOCK_EX);
     echo json_encode(['success' => true, 'message' => 'Votación reiniciada correctamente']);
 } catch (Exception $e) {
     if (isset($conn) && $conn instanceof mysqli) {

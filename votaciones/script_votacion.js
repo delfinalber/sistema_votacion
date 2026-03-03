@@ -14,10 +14,19 @@ let cargaVotantesExcelPendiente = null;
 window.__intervaloCandidatosAdmin = null;
 window.__intervaloCandidatosVotacion = null;
 window.__candidatosEventSource = null;
+window.__votantesEventSource = null;
+window.__debounceBusquedaVotante = null;
 const EVENTO_ACTUALIZACION_CANDIDATOS = 'sv_candidatos_updated_at';
+const EVENTO_ACTUALIZACION_VOTANTES = 'sv_votantes_updated_at';
 
 function tabCandidatosVisible() {
     const tab = document.getElementById('tabCandidatos');
+    const config = document.getElementById('configArea');
+    return !!tab && !!config && !tab.classList.contains('hidden') && !config.classList.contains('hidden');
+}
+
+function tabVotantesVisible() {
+    const tab = document.getElementById('tabVotantes');
     const config = document.getElementById('configArea');
     return !!tab && !!config && !tab.classList.contains('hidden') && !config.classList.contains('hidden');
 }
@@ -33,6 +42,14 @@ function notificarActualizacionCandidatos() {
         localStorage.setItem(EVENTO_ACTUALIZACION_CANDIDATOS, String(Date.now()));
     } catch (error) {
         console.warn('No se pudo notificar actualización de candidatos:', error);
+    }
+}
+
+function notificarActualizacionVotantes() {
+    try {
+        localStorage.setItem(EVENTO_ACTUALIZACION_VOTANTES, String(Date.now()));
+    } catch (error) {
+        console.warn('No se pudo notificar actualización de votantes:', error);
     }
 }
 
@@ -77,6 +94,43 @@ function iniciarRealtimeCandidatosAdmin() {
     }
 }
 
+function detenerRealtimeVotantesAdmin() {
+    if (window.__votantesEventSource) {
+        window.__votantesEventSource.close();
+        window.__votantesEventSource = null;
+    }
+}
+
+function iniciarRealtimeVotantesAdmin() {
+    if (window.__votantesEventSource) return;
+
+    try {
+        const url = `${window.location.origin}/sistema_votacion/votaciones/api/stream_votantes.php`;
+        const eventSource = new EventSource(url);
+
+        eventSource.addEventListener('votantes_updated', async () => {
+            if (!tabVotantesVisible()) return;
+            await cargarTodosVotantes(obtenerFiltroBusquedaVotante());
+        });
+
+        eventSource.onerror = () => {
+            detenerRealtimeVotantesAdmin();
+            setTimeout(() => {
+                iniciarRealtimeVotantesAdmin();
+            }, 3000);
+        };
+
+        window.__votantesEventSource = eventSource;
+    } catch (error) {
+        console.warn('No se pudo iniciar canal en tiempo real de votantes:', error);
+    }
+}
+
+function obtenerFiltroBusquedaVotante() {
+    const input = document.getElementById('buscarVotanteInput');
+    return String(input?.value || '').trim();
+}
+
 function esDocumentoValido(documento) {
     return /^\d{6,11}$/.test(String(documento || '').trim());
 }
@@ -118,6 +172,51 @@ function obtenerValorColumna(row, aliasCabeceras, valorPorDefecto = '') {
     return String(valorPorDefecto || '').trim();
 }
 
+async function validarSesionAdminServidor() {
+    try {
+        const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/validar_admin.php', {
+            method: 'GET',
+            cache: 'no-store',
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            return false;
+        }
+
+        const data = await response.json();
+        return !!data.success;
+    } catch (error) {
+        console.error('Error validando sesión de administrador:', error);
+        return false;
+    }
+}
+
+function ocultarAreaConfiguracion() {
+    document.getElementById('configArea')?.classList.add('hidden');
+    document.getElementById('preliminaresArea')?.classList.add('hidden');
+    document.getElementById('votingArea')?.classList.remove('hidden');
+    sessionStorage.removeItem('autenticado');
+}
+
+async function abrirConfigAreaSegura(tabObjetivo = 'votantes') {
+    const sesionActiva = await validarSesionAdminServidor();
+
+    if (!sesionActiva) {
+        ocultarAreaConfiguracion();
+        mostrarModalKey();
+        return false;
+    }
+
+    sessionStorage.setItem('autenticado', 'true');
+    document.getElementById('votingArea')?.classList.add('hidden');
+    document.getElementById('preliminaresArea')?.classList.add('hidden');
+    document.getElementById('configArea')?.classList.remove('hidden');
+    document.getElementById('modalKey')?.classList.add('hidden');
+    mostrarTab(tabObjetivo);
+    return true;
+}
+
 // ======================================
 // CARGAR CANDIDATOS Y DATOS AL INICIAR
 // ======================================
@@ -127,6 +226,24 @@ window.addEventListener('load', async function() {
     const configAccessDiv = document.querySelector('.config-access');
     
     if (autenticado && autenticado === 'true') {
+        const sesionValida = await validarSesionAdminServidor();
+        if (!sesionValida) {
+            ocultarAreaConfiguracion();
+            if (configAccessDiv) {
+                configAccessDiv.style.display = 'flex';
+            }
+
+            try {
+                await cargarCandidatos();
+            } catch (error) {
+                console.error('Error al cargar candidatos:', error);
+            }
+
+            iniciarRealtimeCandidatosAdmin();
+            iniciarRealtimeVotantesAdmin();
+            return;
+        }
+
         // Usuario es administrador - mostrar panel de configuración
         document.getElementById('votingArea').classList.add('hidden');
         document.getElementById('preliminaresArea').classList.add('hidden');
@@ -170,21 +287,51 @@ window.addEventListener('load', async function() {
     }
 
     iniciarRealtimeCandidatosAdmin();
+    iniciarRealtimeVotantesAdmin();
+
+    const buscarInput = document.getElementById('buscarVotanteInput');
+    if (buscarInput) {
+        buscarInput.addEventListener('input', function(event) {
+            const valorLimpio = String(event.target.value || '').replace(/\D/g, '').slice(0, 11);
+            if (event.target.value !== valorLimpio) {
+                event.target.value = valorLimpio;
+            }
+
+            if (window.__debounceBusquedaVotante) {
+                clearTimeout(window.__debounceBusquedaVotante);
+            }
+
+            window.__debounceBusquedaVotante = setTimeout(() => {
+                buscarVotantePendiente(true);
+            }, 250);
+        });
+
+        buscarInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                buscarVotantePendiente();
+            }
+        });
+    }
 });
 
 window.addEventListener('storage', async function(event) {
-    if (event.key !== EVENTO_ACTUALIZACION_CANDIDATOS) return;
+    if (event.key === EVENTO_ACTUALIZACION_CANDIDATOS) {
+        const data = await cargarCandidatos();
+        if (!data || !data.success) return;
 
-    const data = await cargarCandidatos();
-    if (!data || !data.success) return;
+        if (tabCandidatosVisible()) {
+            mostrarListaCandidatos('personeros', candidatos.personeros || []);
+            mostrarListaCandidatos('contralores', candidatos.contralores || []);
+        }
 
-    if (tabCandidatosVisible()) {
-        mostrarListaCandidatos('personeros', candidatos.personeros || []);
-        mostrarListaCandidatos('contralores', candidatos.contralores || []);
+        if (votacionConVotanteVisible()) {
+            cargarCandidatosInterfaz();
+        }
+        return;
     }
 
-    if (votacionConVotanteVisible()) {
-        cargarCandidatosInterfaz();
+    if (event.key === EVENTO_ACTUALIZACION_VOTANTES && tabVotantesVisible()) {
+        await cargarTodosVotantes(obtenerFiltroBusquedaVotante());
     }
 });
 
@@ -216,8 +363,22 @@ async function cargarCandidatos() {
 // ======================================
 async function cargarVotantes() {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
-        const response = await fetch(apiUrl, { cache: 'no-store' });
+        const filtro = obtenerFiltroBusquedaVotante();
+        let apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
+        if (filtro) {
+            apiUrl += '&id_votante=' + encodeURIComponent(filtro);
+        }
+        const response = await fetch(apiUrl, { cache: 'no-store', credentials: 'same-origin' });
+
+        if (response.status === 401) {
+            sessionStorage.removeItem('autenticado');
+            const listaDiv = document.getElementById('listaVotantesDiv');
+            if (listaDiv) {
+                listaDiv.innerHTML = '<p style="text-align: center; color: #dc3545;">Sesión de administrador expirada. Vuelva a iniciar sesión.</p>';
+            }
+            return;
+        }
+
         const data = await response.json();
 
         if (data.success) {
@@ -231,17 +392,34 @@ async function cargarVotantes() {
 // ======================================
 // CARGAR TODOS LOS VOTANTES DEL API
 // ======================================
-async function cargarTodosVotantes() {
+async function cargarTodosVotantes(idVotante = '') {
     try {
-        const apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
-        const response = await fetch(apiUrl, { cache: 'no-store' });
+        let apiUrl = window.location.origin + '/sistema_votacion/votaciones/api/get_votantes.php?t=' + Date.now();
+        const filtroId = String(idVotante || '').trim();
+        if (filtroId) {
+            apiUrl += '&id_votante=' + encodeURIComponent(filtroId);
+        }
+        const response = await fetch(apiUrl, { cache: 'no-store', credentials: 'same-origin' });
+
+        if (response.status === 401) {
+            sessionStorage.removeItem('autenticado');
+            const listaDiv = document.getElementById('listaVotantesDiv');
+            if (listaDiv) {
+                listaDiv.innerHTML = '<p style="text-align: center; color: #dc3545;">Sesión de administrador expirada. Vuelva a iniciar sesión.</p>';
+            }
+            return;
+        }
+
         const data = await response.json();
 
         if (data.success && data.votantes) {
             mostrarListaVotantes(data.votantes);
         } else {
             const listaDiv = document.getElementById('listaVotantesDiv');
-            listaDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">No hay votantes registrados</p>';
+            const mensaje = filtroId
+                ? 'No se encontró el votante pendiente con ese ID'
+                : 'No hay votantes pendientes por votar';
+            listaDiv.innerHTML = `<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">${mensaje}</p>`;
         }
     } catch (error) {
         console.error('Error al cargar votantes:', error);
@@ -258,30 +436,68 @@ function mostrarListaVotantes(votantes) {
     listaDiv.innerHTML = '';
 
     if (!votantes || votantes.length === 0) {
-        listaDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">No hay votantes registrados</p>';
+        const filtro = obtenerFiltroBusquedaVotante();
+        const mensaje = filtro
+            ? 'No se encontró el votante pendiente con ese ID'
+            : 'No hay votantes pendientes por votar';
+        listaDiv.innerHTML = `<p style="text-align: center; color: #999; padding: 20px; font-style: italic;">${mensaje}</p>`;
         return;
     }
 
     votantes.forEach(votante => {
         const item = document.createElement('div');
         item.className = 'votante-item';
-        
-        // Determinar estado del voto
-        const estadoVoto = votante.voto_realizado ? '✓ Votó' : 'Pendiente';
-        const colorEstado = votante.voto_realizado ? '#28a745' : '#ffc107';
-        
-        item.innerHTML = `
-            <div class="votante-info">
-                <strong>${votante.nombre}</strong>
-                <small>Código: ${votante.id_votante}</small>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 12px; color: ${colorEstado}; font-weight: 600;">${estadoVoto}</span>
-                <button class="btn-eliminar" onclick="eliminarVotanteAdmin('${votante.id_votante}')">Eliminar</button>
-            </div>
-        `;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'votante-info';
+
+        const nombreStrong = document.createElement('strong');
+        nombreStrong.textContent = String(votante.nombre || 'Sin nombre');
+
+        const codigoSmall = document.createElement('small');
+        codigoSmall.textContent = `Código: ${String(votante.id_votante || '')}`;
+
+        infoDiv.appendChild(nombreStrong);
+        infoDiv.appendChild(codigoSmall);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.style.display = 'flex';
+        actionsDiv.style.alignItems = 'center';
+        actionsDiv.style.gap = '10px';
+
+        const botonEliminar = document.createElement('button');
+        botonEliminar.className = 'btn-eliminar';
+        botonEliminar.textContent = 'Eliminar';
+        botonEliminar.addEventListener('click', () => {
+            eliminarVotanteAdmin(String(votante.id_votante || ''));
+        });
+
+        actionsDiv.appendChild(botonEliminar);
+        item.appendChild(infoDiv);
+        item.appendChild(actionsDiv);
         listaDiv.appendChild(item);
     });
+}
+
+async function buscarVotantePendiente(desdePrefijo = false) {
+    const filtro = obtenerFiltroBusquedaVotante();
+
+    if (filtro && !/^\d{1,11}$/.test(filtro)) {
+        if (!desdePrefijo) {
+            alert('Ingrese un ID válido (solo números)');
+        }
+        return;
+    }
+
+    await cargarTodosVotantes(filtro);
+}
+
+async function limpiarBusquedaVotante() {
+    const input = document.getElementById('buscarVotanteInput');
+    if (input) {
+        input.value = '';
+    }
+    await cargarTodosVotantes('');
 }
 
 // ======================================
@@ -317,7 +533,8 @@ async function agregarVotanteIndividual() {
             alert('✓ Votante agregado correctamente');
             document.getElementById('nuevoNombreVotante').value = '';
             document.getElementById('nuevoCódigoVotante').value = '';
-            await cargarTodosVotantes();
+            notificarActualizacionVotantes();
+            await cargarTodosVotantes(obtenerFiltroBusquedaVotante());
         } else {
             alert('Error: ' + (data.message || data.error || 'Error desconocido'));
         }
@@ -564,7 +781,8 @@ async function confirmarCargaVotantesExcel() {
         }
 
         cargaVotantesExcelPendiente = null;
-        await cargarTodosVotantes();
+        notificarActualizacionVotantes();
+        await cargarTodosVotantes(obtenerFiltroBusquedaVotante());
     } catch (error) {
         mostrarMensajeModalCargaVotantesExcel('Error al cargar los votantes', true);
         passwordInput.value = '';
@@ -620,7 +838,8 @@ async function eliminarVotanteAdmin(idVotante) {
 
         if (data.success) {
             alert('✓ Votante eliminado correctamente');
-            await cargarTodosVotantes();
+            notificarActualizacionVotantes();
+            await cargarTodosVotantes(obtenerFiltroBusquedaVotante());
         } else {
             alert('Error: ' + (data.error || data.message));
         }
@@ -1436,6 +1655,7 @@ function limpiarEstadoDespuesDeReinicio() {
     } catch (error) {
         console.warn('No se pudo limpiar historial:', error);
     }
+
 }
 
 async function confirmarReinicioVotacionSistema() {
@@ -1495,6 +1715,7 @@ async function confirmarReinicioVotacionSistema() {
         if (data.success) {
             cerrarModalReinicioVotacion();
             limpiarEstadoDespuesDeReinicio();
+            notificarActualizacionVotantes();
             alert('✓ Votación reiniciada correctamente');
             await cargarResultados();
         } else {
@@ -1763,11 +1984,8 @@ function iniciarActualizacionCandidatosAdmin() {
     iniciarRealtimeCandidatosAdmin();
 }
 
-function abrirTabResultados() {
-    document.getElementById('votingArea')?.classList.add('hidden');
-    document.getElementById('preliminaresArea')?.classList.add('hidden');
-    document.getElementById('configArea')?.classList.remove('hidden');
-    mostrarTab('resultados');
+async function abrirTabResultados() {
+    await abrirConfigAreaSegura('resultados');
 }
 
 function mostrarTab(tab) {
@@ -1801,7 +2019,8 @@ function mostrarTab(tab) {
         if (listaDiv) {
             listaDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Cargando votantes desde base de datos...</p>';
         }
-        cargarTodosVotantes();
+        iniciarRealtimeVotantesAdmin();
+        cargarTodosVotantes(obtenerFiltroBusquedaVotante());
     } else if (tab === 'sistema') {
         detenerActualizacionCandidatosAdmin();
         detenerActualizacionResultadosAdmin();
@@ -2059,13 +2278,11 @@ async function verificarKey() {
         const data = await response.json();
         
         if (data.success) {
+            sessionStorage.setItem('autenticado', 'true');
             document.getElementById('modalKey').classList.add('hidden');
             document.getElementById('usuarioInput').value = '';
             document.getElementById('passwordInput').value = '';
-            document.getElementById('votingArea').classList.add('hidden');
-            document.getElementById('configArea').classList.remove('hidden');
-            // Cargar automáticamente la lista de votantes al entrar
-            await cargarTodosVotantes();
+            await abrirConfigAreaSegura('votantes');
         } else {
             alert('Error: ' + (data.error || 'Credenciales inválidas'));
         }
@@ -2119,6 +2336,7 @@ window.addEventListener('beforeunload', function() {
     detenerActualizacionCandidatosVotacion();
     detenerActualizacionCandidatosAdmin();
     detenerRealtimeCandidatosAdmin();
+    detenerRealtimeVotantesAdmin();
     detenerActualizacionResultadosAdmin();
 });
 

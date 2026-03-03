@@ -3,10 +3,17 @@
 // VALIDAR CREDENCIALES DE ADMINISTRADOR
 // ======================================
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('X-Content-Type-Options: nosniff');
 
 require_once 'db.php';
+
+ini_set('session.use_strict_mode', '1');
+ini_set('session.cookie_httponly', '1');
+if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+    ini_set('session.cookie_secure', '1');
+}
+session_start();
 
 function obtenerTablaAdministrador(mysqli $conn): string {
     $existeAdministrador = $conn->query("SHOW TABLES LIKE 'administrador'");
@@ -20,6 +27,42 @@ function obtenerTablaAdministrador(mysqli $conn): string {
     }
 
     throw new Exception('No existe la tabla administrador');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $maxIdleSeconds = 1800;
+    $lastActivity = (int)($_SESSION['admin_last_activity'] ?? 0);
+
+    if (!empty($_SESSION['admin_authenticated']) && $_SESSION['admin_authenticated'] === true) {
+        if ($lastActivity > 0 && (time() - $lastActivity) > $maxIdleSeconds) {
+            session_unset();
+            session_destroy();
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => 'Sesión expirada']);
+            exit;
+        }
+
+        $_SESSION['admin_last_activity'] = time();
+
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Sesión activa',
+            'id_usuario' => $_SESSION['admin_id'] ?? null,
+            'usuario' => $_SESSION['admin_user'] ?? null,
+            'nombre' => $_SESSION['admin_name'] ?? null
+        ]);
+        exit;
+    }
+
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Sesión no autenticada']);
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -112,6 +155,13 @@ try {
         echo json_encode(['success' => false, 'error' => 'Usuario o contraseña incorrectos']);
         exit;
     }
+
+    session_regenerate_id(true);
+    $_SESSION['admin_authenticated'] = true;
+    $_SESSION['admin_id'] = (string)$row['id_administrador'];
+    $_SESSION['admin_user'] = (string)$row['usuario_admin'];
+    $_SESSION['admin_name'] = (string)($row['nombre'] ?? '');
+    $_SESSION['admin_last_activity'] = time();
     
     // Credenciales válidas
     http_response_code(200);
