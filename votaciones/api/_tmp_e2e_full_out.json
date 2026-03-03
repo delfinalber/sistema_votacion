@@ -1,0 +1,856 @@
+{
+    "meta": {
+        "test_id": "7123572595",
+        "test_run_id": "TST_FULL_20260302210714_841",
+        "timestamp": "2026-03-02 21:07:14",
+        "base_url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api"
+    },
+    "steps": [
+        {
+            "name": "validar_admin",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/validar_admin.php",
+                "payload": {
+                    "usuario_adminstrador": "rosa123",
+                    "password_adminstrador": "rosa123"
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Acceso concedido\",\"id_usuario\":1,\"usuario\":\"rosa123\",\"nombre\":\"alber delfin pe\\u00f1a ortigoza\"}",
+                "json": {
+                    "success": true,
+                    "message": "Acceso concedido",
+                    "id_usuario": 1,
+                    "usuario": "rosa123",
+                    "nombre": "alber delfin peña ortigoza"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "validar_sesion_respuesta_json",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/validar_sesion.php",
+                "payload": {
+                    "usuario": "123",
+                    "password": "123"
+                },
+                "status": 401,
+                "raw": "\r\n\r\n{\"success\":false,\"message\":\"Usuario o contrase\\u00f1a incorrectos\"}",
+                "json": {
+                    "success": false,
+                    "message": "Usuario o contraseña incorrectos"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "cargar_votantes_excel",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/cargar_votantes_excel.php",
+                "payload": {
+                    "usuario_adminstrador": "rosa123",
+                    "password_adminstrador": "rosa123",
+                    "votantes": [
+                        {
+                            "documento": "7123572595",
+                            "nombre": "E2E VOTANTE TST_FULL_20260302210714_841"
+                        }
+                    ]
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Carga finalizada\",\"insertados\":1,\"actualizados\":0,\"errores\":0,\"procesados\":1,\"total_recibidos\":1}",
+                "json": {
+                    "success": true,
+                    "message": "Carga finalizada",
+                    "insertados": 1,
+                    "actualizados": 0,
+                    "errores": 0,
+                    "procesados": 1,
+                    "total_recibidos": 1
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "get_votantes_incluye_test",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/get_votantes.php?t=1772503634",
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Votantes obtenidos correctamente\",\"total\":92,\"votantes\":[{\"id_votante\":\"123456789\",\"nombre\":\"ALBER DELFIN PE\\u00d1A ORTIGOZA\",\"voto_realizado\":\"1\"},{\"id_votante\":\"5122179305\",\"nombre\":\"Ana Le\\u00f3n\",\"voto_realizado\":\"0\"},{\"id_votante\":\"8065864451\",\"nombre\":\"Ana Le\\u00f3n\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111101\",\"nombre\":\"Ana Mar\\u00eda L\\u00f3pez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6257692178\",\"nombre\":\"Ana Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6473533062\",\"nombre\":\"Ana Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6218193639\",\"nombre\":\"Ana Ram\\u00edrez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2766834543\",\"nombre\":\"Ana Torres\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3284055678\",\"nombre\":\"Andr\\u00e9s Molina\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1077246156\",\"nombre\":\"Angela Victoria Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111001\",\"nombre\":\"Camila D\\u00edaz Morales\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1627832407\",\"nombre\":\"Camila Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9070488687\",\"nombre\":\"Camila Pardo\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5713324141\",\"nombre\":\"Carlos Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"8966271177\",\"nombre\":\"Carlos Rojas\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111106\",\"nombre\":\"Daniel Hern\\u00e1ndez Ruiz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5526157521\",\"nombre\":\"Daniel Rojas\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1072662379\",\"nombre\":\"Danna Chinchia Quintanilla\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7872576226\",\"nombre\":\"Diana Le\\u00f3n\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4376610225\",\"nombre\":\"Diana L\\u00f3pez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9560448514\",\"nombre\":\"Diana Molina\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1815446425\",\"nombre\":\"Diana Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9880846442\",\"nombre\":\"Diana Torres\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7123572595\",\"nombre\":\"E2E VOTANTE TST_FULL_20260302210714_841\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1077725987\",\"nombre\":\"fabian quintero\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7264896482\",\"nombre\":\"Felipe M\\u00e9ndez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4604760086\",\"nombre\":\"Felipe Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1801207382\",\"nombre\":\"Felipe Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006110903\",\"nombre\":\"Gabriela Flores Mendoza\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5803432566\",\"nombre\":\"Gabriela Torres\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2554534701\",\"nombre\":\"Isabella M\\u00e9ndez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2568472440\",\"nombre\":\"Isabella Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6459631200\",\"nombre\":\"Isabella Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111003\",\"nombre\":\"Isabella Romero Vargas\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1121913362\",\"nombre\":\"Jean Carlos AVENDA\\u00d1O\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1077232828\",\"nombre\":\"JHON EDISON BASTIDAS BETANCUR\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111102\",\"nombre\":\"Juan Carlos Rodr\\u00edguez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1075796670\",\"nombre\":\"Juan David\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5604738371\",\"nombre\":\"Juan D\\u00edaz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1076511048\",\"nombre\":\"Juan Jose Perdomo Gonzales\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7260595311\",\"nombre\":\"Juan L\\u00f3pez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3777727578\",\"nombre\":\"Juan M\\u00e9ndez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"10766911001\",\"nombre\":\"Juan Paulo\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7106159339\",\"nombre\":\"Juli\\u00e1n Cort\\u00e9s\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9401552242\",\"nombre\":\"Juli\\u00e1n Le\\u00f3n\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4625154099\",\"nombre\":\"Juli\\u00e1n Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6773714765\",\"nombre\":\"Juli\\u00e1n Pardo\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9948517215\",\"nombre\":\"Juli\\u00e1n P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4169338792\",\"nombre\":\"Juli\\u00e1n Silva\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9938542551\",\"nombre\":\"Juli\\u00e1n Su\\u00e1rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1029888675\",\"nombre\":\"kenssy Alexandra\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9587023218\",\"nombre\":\"Laura Castro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5103207900\",\"nombre\":\"Laura Ram\\u00edrez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006110905\",\"nombre\":\"Luciana Paredes Cruz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111104\",\"nombre\":\"Luis Alberto Garc\\u00eda\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3978080105\",\"nombre\":\"Luis Navarro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7307952399\",\"nombre\":\"Luis P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"7722975\",\"nombre\":\"luz elena\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1075252300\",\"nombre\":\"Luz Elena Polania\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4859465485\",\"nombre\":\"Mar\\u00eda G\\u00f3mez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"8382290522\",\"nombre\":\"Mar\\u00eda Herrera\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3482199578\",\"nombre\":\"Mar\\u00eda Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6105157807\",\"nombre\":\"Mar\\u00eda Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1586248598\",\"nombre\":\"Maria Paula\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1075217491\",\"nombre\":\"Maria Paula Gonzales\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6942744508\",\"nombre\":\"Mar\\u00eda Su\\u00e1rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1077235045\",\"nombre\":\"Mariana Isabela Ramirez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1075795095\",\"nombre\":\"Martin Julian Torres\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111004\",\"nombre\":\"Mateo Castillo Castro\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2132009779\",\"nombre\":\"Mateo Molina\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2145882331\",\"nombre\":\"Mateo Molina\",\"voto_realizado\":\"0\"},{\"id_votante\":\"5345175431\",\"nombre\":\"Mateo P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"8768222997\",\"nombre\":\"Mateo Silva\",\"voto_realizado\":\"0\"},{\"id_votante\":\"4787653725\",\"nombre\":\"Nicol\\u00e1s Herrera\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6989677841\",\"nombre\":\"Nicol\\u00e1s M\\u00e9ndez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1234567891\",\"nombre\":\"pamela\",\"voto_realizado\":\"0\"},{\"id_votante\":\"9455558327\",\"nombre\":\"Paula D\\u00edaz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3503268108\",\"nombre\":\"Paula P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111002\",\"nombre\":\"Santiago Moreno Jim\\u00e9nez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006110902\",\"nombre\":\"Sebasti\\u00e1n Arias\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2403364610\",\"nombre\":\"Sergio Ruiz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6559845213\",\"nombre\":\"Sergio Ruiz\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1145725934\",\"nombre\":\"Sofia gamboa\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2868759843\",\"nombre\":\"Sof\\u00eda L\\u00f3pez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111103\",\"nombre\":\"Sof\\u00eda Mart\\u00ednez P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"2953725146\",\"nombre\":\"Sof\\u00eda Ortega\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3869735219\",\"nombre\":\"Sof\\u00eda P\\u00e9rez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"6011421995\",\"nombre\":\"Sof\\u00eda Rojas\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1122677802\",\"nombre\":\"Stefanny Lorena Quintero\",\"voto_realizado\":\"0\"},{\"id_votante\":\"1006111105\",\"nombre\":\"Valentina G\\u00f3mez S\\u00e1nchez\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3837178564\",\"nombre\":\"Valentina Herrera\",\"voto_realizado\":\"0\"},{\"id_votante\":\"3289738583\",\"nombre\":\"Valentina Ram\\u00edrez\",\"voto_realizado\":\"0\"}]}",
+                "json": {
+                    "success": true,
+                    "message": "Votantes obtenidos correctamente",
+                    "total": 92,
+                    "votantes": [
+                        {
+                            "id_votante": "123456789",
+                            "nombre": "ALBER DELFIN PEÑA ORTIGOZA",
+                            "voto_realizado": "1"
+                        },
+                        {
+                            "id_votante": "5122179305",
+                            "nombre": "Ana León",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "8065864451",
+                            "nombre": "Ana León",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111101",
+                            "nombre": "Ana María López",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6257692178",
+                            "nombre": "Ana Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6473533062",
+                            "nombre": "Ana Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6218193639",
+                            "nombre": "Ana Ramírez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2766834543",
+                            "nombre": "Ana Torres",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3284055678",
+                            "nombre": "Andrés Molina",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1077246156",
+                            "nombre": "Angela Victoria Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111001",
+                            "nombre": "Camila Díaz Morales",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1627832407",
+                            "nombre": "Camila Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9070488687",
+                            "nombre": "Camila Pardo",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5713324141",
+                            "nombre": "Carlos Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "8966271177",
+                            "nombre": "Carlos Rojas",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111106",
+                            "nombre": "Daniel Hernández Ruiz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5526157521",
+                            "nombre": "Daniel Rojas",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1072662379",
+                            "nombre": "Danna Chinchia Quintanilla",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7872576226",
+                            "nombre": "Diana León",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4376610225",
+                            "nombre": "Diana López",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9560448514",
+                            "nombre": "Diana Molina",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1815446425",
+                            "nombre": "Diana Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9880846442",
+                            "nombre": "Diana Torres",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7123572595",
+                            "nombre": "E2E VOTANTE TST_FULL_20260302210714_841",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1077725987",
+                            "nombre": "fabian quintero",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7264896482",
+                            "nombre": "Felipe Méndez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4604760086",
+                            "nombre": "Felipe Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1801207382",
+                            "nombre": "Felipe Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006110903",
+                            "nombre": "Gabriela Flores Mendoza",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5803432566",
+                            "nombre": "Gabriela Torres",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2554534701",
+                            "nombre": "Isabella Méndez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2568472440",
+                            "nombre": "Isabella Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6459631200",
+                            "nombre": "Isabella Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111003",
+                            "nombre": "Isabella Romero Vargas",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1121913362",
+                            "nombre": "Jean Carlos AVENDAÑO",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1077232828",
+                            "nombre": "JHON EDISON BASTIDAS BETANCUR",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111102",
+                            "nombre": "Juan Carlos Rodríguez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1075796670",
+                            "nombre": "Juan David",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5604738371",
+                            "nombre": "Juan Díaz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1076511048",
+                            "nombre": "Juan Jose Perdomo Gonzales",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7260595311",
+                            "nombre": "Juan López",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3777727578",
+                            "nombre": "Juan Méndez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "10766911001",
+                            "nombre": "Juan Paulo",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7106159339",
+                            "nombre": "Julián Cortés",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9401552242",
+                            "nombre": "Julián León",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4625154099",
+                            "nombre": "Julián Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6773714765",
+                            "nombre": "Julián Pardo",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9948517215",
+                            "nombre": "Julián Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4169338792",
+                            "nombre": "Julián Silva",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9938542551",
+                            "nombre": "Julián Suárez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1029888675",
+                            "nombre": "kenssy Alexandra",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9587023218",
+                            "nombre": "Laura Castro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5103207900",
+                            "nombre": "Laura Ramírez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006110905",
+                            "nombre": "Luciana Paredes Cruz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111104",
+                            "nombre": "Luis Alberto García",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3978080105",
+                            "nombre": "Luis Navarro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7307952399",
+                            "nombre": "Luis Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "7722975",
+                            "nombre": "luz elena",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1075252300",
+                            "nombre": "Luz Elena Polania",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4859465485",
+                            "nombre": "María Gómez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "8382290522",
+                            "nombre": "María Herrera",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3482199578",
+                            "nombre": "María Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6105157807",
+                            "nombre": "María Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1586248598",
+                            "nombre": "Maria Paula",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1075217491",
+                            "nombre": "Maria Paula Gonzales",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6942744508",
+                            "nombre": "María Suárez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1077235045",
+                            "nombre": "Mariana Isabela Ramirez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1075795095",
+                            "nombre": "Martin Julian Torres",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111004",
+                            "nombre": "Mateo Castillo Castro",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2132009779",
+                            "nombre": "Mateo Molina",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2145882331",
+                            "nombre": "Mateo Molina",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "5345175431",
+                            "nombre": "Mateo Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "8768222997",
+                            "nombre": "Mateo Silva",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "4787653725",
+                            "nombre": "Nicolás Herrera",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6989677841",
+                            "nombre": "Nicolás Méndez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1234567891",
+                            "nombre": "pamela",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "9455558327",
+                            "nombre": "Paula Díaz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3503268108",
+                            "nombre": "Paula Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111002",
+                            "nombre": "Santiago Moreno Jiménez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006110902",
+                            "nombre": "Sebastián Arias",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2403364610",
+                            "nombre": "Sergio Ruiz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6559845213",
+                            "nombre": "Sergio Ruiz",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1145725934",
+                            "nombre": "Sofia gamboa",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2868759843",
+                            "nombre": "Sofía López",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111103",
+                            "nombre": "Sofía Martínez Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "2953725146",
+                            "nombre": "Sofía Ortega",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3869735219",
+                            "nombre": "Sofía Pérez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "6011421995",
+                            "nombre": "Sofía Rojas",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1122677802",
+                            "nombre": "Stefanny Lorena Quintero",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "1006111105",
+                            "nombre": "Valentina Gómez Sánchez",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3837178564",
+                            "nombre": "Valentina Herrera",
+                            "voto_realizado": "0"
+                        },
+                        {
+                            "id_votante": "3289738583",
+                            "nombre": "Valentina Ramírez",
+                            "voto_realizado": "0"
+                        }
+                    ]
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "validar_votante",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/validar_votante.php",
+                "payload": {
+                    "id_votante": "7123572595"
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Votante verificado\",\"votante\":{\"id_votante\":\"7123572595\",\"nombre\":\"E2E VOTANTE TST_FULL_20260302210714_841\"}}",
+                "json": {
+                    "success": true,
+                    "message": "Votante verificado",
+                    "votante": {
+                        "id_votante": "7123572595",
+                        "nombre": "E2E VOTANTE TST_FULL_20260302210714_841"
+                    }
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "registrar_votos_completo_primero",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/registrar_votos_completo.php",
+                "payload": {
+                    "id_votante": "7123572595",
+                    "id_personero": 0,
+                    "id_contralor": 0
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Voto registrado correctamente\",\"votante\":\"7123572595\"}",
+                "json": {
+                    "success": true,
+                    "message": "Voto registrado correctamente",
+                    "votante": "7123572595"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "registrar_votos_completo_bloquea_duplicado",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/registrar_votos_completo.php",
+                "payload": {
+                    "id_votante": "7123572595",
+                    "id_personero": 0,
+                    "id_contralor": 0
+                },
+                "status": 403,
+                "raw": "\r\n\r\n{\"success\":false,\"message\":\"Este votante ya ha emitido su voto\"}",
+                "json": {
+                    "success": false,
+                    "message": "Este votante ya ha emitido su voto"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "obtener_resultados_votos",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/obtener_resultados_votos.php?t=1772503634",
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"resultados\":[{\"id\":0,\"nombre\":\"Votos en blanco\",\"total_votos\":5},{\"id\":9,\"nombre\":\"HUGO RODALLEGA\",\"total_votos\":1}],\"actualizado_en\":\"2026-03-03 03:07:14\"}",
+                "json": {
+                    "success": true,
+                    "resultados": [
+                        {
+                            "id": 0,
+                            "nombre": "Votos en blanco",
+                            "total_votos": 5
+                        },
+                        {
+                            "id": 9,
+                            "nombre": "HUGO RODALLEGA",
+                            "total_votos": 1
+                        }
+                    ],
+                    "actualizado_en": "2026-03-03 03:07:14"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "obtener_consolidado",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/obtener_consolidado.php?t=1772503634",
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"personeros\":[],\"contralores\":[{\"id_candidato\":9,\"nombre\":\"HUGO RODALLEGA\",\"numero\":\"1\",\"total_votos\":1}],\"votos_blanco_personero\":2,\"votos_blanco_contralor\":1,\"total_registrados\":92,\"total_votaron\":2}\r\n",
+                "json": {
+                    "success": true,
+                    "personeros": [],
+                    "contralores": [
+                        {
+                            "id_candidato": 9,
+                            "nombre": "HUGO RODALLEGA",
+                            "numero": "1",
+                            "total_votos": 1
+                        }
+                    ],
+                    "votos_blanco_personero": 2,
+                    "votos_blanco_contralor": 1,
+                    "total_registrados": 92,
+                    "total_votaron": 2
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "registrar_mesa_ingreso",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/registrar_mesa.php",
+                "payload": {
+                    "accion": "ingreso",
+                    "usuario_sesion": "E2E_TST_FULL_20260302210714_841"
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Registro de mesa guardado correctamente\",\"id_registro\":8,\"accion\":\"ingreso\"}",
+                "json": {
+                    "success": true,
+                    "message": "Registro de mesa guardado correctamente",
+                    "id_registro": 8,
+                    "accion": "ingreso"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "registrar_mesa_registro",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/registrar_mesa.php",
+                "payload": {
+                    "accion": "registro",
+                    "usuario_sesion": "E2E_TST_FULL_20260302210714_841",
+                    "profesor_nombre": "PROF E2E",
+                    "profesor_materia": "SISTEMAS",
+                    "puesto_votacion": "PUESTO E2E",
+                    "profesor_telefono": "3000000000",
+                    "jurado_nombre": "JURADO E2E",
+                    "jurado_grado": "11-A"
+                },
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Registro de mesa guardado correctamente\",\"id_registro\":9,\"accion\":\"registro\"}",
+                "json": {
+                    "success": true,
+                    "message": "Registro de mesa guardado correctamente",
+                    "id_registro": 9,
+                    "accion": "registro"
+                },
+                "error": null
+            }
+        },
+        {
+            "name": "obtener_registro_mesa_incluye_test",
+            "result": "PASS",
+            "detail": {
+                "url": "http:\/\/localhost\/sistema_votacion\/votaciones\/api\/obtener_registro_mesa.php?t=1772503635",
+                "status": 200,
+                "raw": "\r\n\r\n{\"success\":true,\"message\":\"Registros de mesa obtenidos correctamente\",\"total\":9,\"registros\":[{\"id\":9,\"accion\":\"registro\",\"usuario_sesion\":\"\",\"profesor_nombre\":\"PROF E2E\",\"profesor_materia\":\"SISTEMAS\",\"puesto_votacion\":\"PUESTO E2E\",\"profesor_telefono\":\"3000000000\",\"jurado_nombre\":\"JURADO E2E\",\"jurado_grado\":\"11-A\",\"fecha_registro\":\"2026-03-02 21:07:15\"},{\"id\":8,\"accion\":\"ingreso\",\"usuario_sesion\":\"E2E_TST_FULL_20260302210714_841\",\"profesor_nombre\":\"INGRESO E2E_TST_FULL_20260302210714_841\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 21:07:15\"},{\"id\":7,\"accion\":\"registro\",\"usuario_sesion\":\"\",\"profesor_nombre\":\"PROF E2E\",\"profesor_materia\":\"SISTEMAS\",\"puesto_votacion\":\"PUESTO E2E\",\"profesor_telefono\":\"3000000000\",\"jurado_nombre\":\"JURADO E2E\",\"jurado_grado\":\"11-A\",\"fecha_registro\":\"2026-03-02 21:06:11\"},{\"id\":6,\"accion\":\"ingreso\",\"usuario_sesion\":\"E2E_TST_FULL_20260302210610_482\",\"profesor_nombre\":\"INGRESO E2E_TST_FULL_20260302210610_482\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 21:06:11\"},{\"id\":5,\"accion\":\"ingreso\",\"usuario_sesion\":\"alber delfin pe\\u00f1a ortigoza\",\"profesor_nombre\":\"INGRESO alber delfin pe\\u00f1a ortigoza\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 21:00:05\"},{\"id\":4,\"accion\":\"ingreso\",\"usuario_sesion\":\"santiago pe\\u00f1a yague\",\"profesor_nombre\":\"INGRESO santiago pe\\u00f1a yague\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 20:49:58\"},{\"id\":3,\"accion\":\"ingreso\",\"usuario_sesion\":\"santiago pe\\u00f1a yague\",\"profesor_nombre\":\"INGRESO santiago pe\\u00f1a yague\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 20:42:20\"},{\"id\":2,\"accion\":\"registro\",\"usuario_sesion\":\"\",\"profesor_nombre\":\"Profesor Prueba\",\"profesor_materia\":\"Matem\\u00e1ticas\",\"puesto_votacion\":\"Mesa 1\",\"profesor_telefono\":\"3000000000\",\"jurado_nombre\":\"Jurado Prueba\",\"jurado_grado\":\"11-A\",\"fecha_registro\":\"2026-03-02 15:34:20\"},{\"id\":1,\"accion\":\"ingreso\",\"usuario_sesion\":\"TEST_\",\"profesor_nombre\":\"INGRESO TEST_INGRESO\",\"profesor_materia\":\"INGRESO\",\"puesto_votacion\":\"N\\\/A\",\"profesor_telefono\":\"0\",\"jurado_nombre\":\"N\\\/A\",\"jurado_grado\":\"N\\\/A\",\"fecha_registro\":\"2026-03-02 15:34:17\"}]}",
+                "json": {
+                    "success": true,
+                    "message": "Registros de mesa obtenidos correctamente",
+                    "total": 9,
+                    "registros": [
+                        {
+                            "id": 9,
+                            "accion": "registro",
+                            "usuario_sesion": "",
+                            "profesor_nombre": "PROF E2E",
+                            "profesor_materia": "SISTEMAS",
+                            "puesto_votacion": "PUESTO E2E",
+                            "profesor_telefono": "3000000000",
+                            "jurado_nombre": "JURADO E2E",
+                            "jurado_grado": "11-A",
+                            "fecha_registro": "2026-03-02 21:07:15"
+                        },
+                        {
+                            "id": 8,
+                            "accion": "ingreso",
+                            "usuario_sesion": "E2E_TST_FULL_20260302210714_841",
+                            "profesor_nombre": "INGRESO E2E_TST_FULL_20260302210714_841",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 21:07:15"
+                        },
+                        {
+                            "id": 7,
+                            "accion": "registro",
+                            "usuario_sesion": "",
+                            "profesor_nombre": "PROF E2E",
+                            "profesor_materia": "SISTEMAS",
+                            "puesto_votacion": "PUESTO E2E",
+                            "profesor_telefono": "3000000000",
+                            "jurado_nombre": "JURADO E2E",
+                            "jurado_grado": "11-A",
+                            "fecha_registro": "2026-03-02 21:06:11"
+                        },
+                        {
+                            "id": 6,
+                            "accion": "ingreso",
+                            "usuario_sesion": "E2E_TST_FULL_20260302210610_482",
+                            "profesor_nombre": "INGRESO E2E_TST_FULL_20260302210610_482",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 21:06:11"
+                        },
+                        {
+                            "id": 5,
+                            "accion": "ingreso",
+                            "usuario_sesion": "alber delfin peña ortigoza",
+                            "profesor_nombre": "INGRESO alber delfin peña ortigoza",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 21:00:05"
+                        },
+                        {
+                            "id": 4,
+                            "accion": "ingreso",
+                            "usuario_sesion": "santiago peña yague",
+                            "profesor_nombre": "INGRESO santiago peña yague",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 20:49:58"
+                        },
+                        {
+                            "id": 3,
+                            "accion": "ingreso",
+                            "usuario_sesion": "santiago peña yague",
+                            "profesor_nombre": "INGRESO santiago peña yague",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 20:42:20"
+                        },
+                        {
+                            "id": 2,
+                            "accion": "registro",
+                            "usuario_sesion": "",
+                            "profesor_nombre": "Profesor Prueba",
+                            "profesor_materia": "Matemáticas",
+                            "puesto_votacion": "Mesa 1",
+                            "profesor_telefono": "3000000000",
+                            "jurado_nombre": "Jurado Prueba",
+                            "jurado_grado": "11-A",
+                            "fecha_registro": "2026-03-02 15:34:20"
+                        },
+                        {
+                            "id": 1,
+                            "accion": "ingreso",
+                            "usuario_sesion": "TEST_",
+                            "profesor_nombre": "INGRESO TEST_INGRESO",
+                            "profesor_materia": "INGRESO",
+                            "puesto_votacion": "N\/A",
+                            "profesor_telefono": "0",
+                            "jurado_nombre": "N\/A",
+                            "jurado_grado": "N\/A",
+                            "fecha_registro": "2026-03-02 15:34:17"
+                        }
+                    ]
+                },
+                "error": null
+            }
+        }
+    ],
+    "cleanup": [
+        {
+            "delete_votos": true
+        },
+        {
+            "reset_voto_realizado": true
+        },
+        {
+            "delete_votante": true
+        },
+        {
+            "delete_registro_mesa": false
+        }
+    ],
+    "summary": {
+        "passed": 12,
+        "failed": 0
+    }
+}
