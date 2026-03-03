@@ -16,8 +16,47 @@ window.__intervaloCandidatosVotacion = null;
 window.__candidatosEventSource = null;
 window.__votantesEventSource = null;
 window.__debounceBusquedaVotante = null;
+window.__tabObjetivoTrasLogin = 'votantes';
+window.__toastAccesoTimer = null;
 const EVENTO_ACTUALIZACION_CANDIDATOS = 'sv_candidatos_updated_at';
 const EVENTO_ACTUALIZACION_VOTANTES = 'sv_votantes_updated_at';
+
+function mostrarIndicadorAcceso(texto) {
+    let toast = document.getElementById('svAccessToast');
+
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'svAccessToast';
+        toast.style.position = 'fixed';
+        toast.style.top = '20px';
+        toast.style.right = '20px';
+        toast.style.zIndex = '3000';
+        toast.style.background = '#2e7d32';
+        toast.style.color = '#fff';
+        toast.style.padding = '10px 14px';
+        toast.style.borderRadius = '8px';
+        toast.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        toast.style.fontSize = '14px';
+        toast.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        document.body.appendChild(toast);
+    }
+
+    toast.textContent = texto || 'Acceso autorizado';
+    toast.style.opacity = '1';
+
+    if (window.__toastAccesoTimer) {
+        clearTimeout(window.__toastAccesoTimer);
+    }
+
+    window.__toastAccesoTimer = setTimeout(() => {
+        const toastActual = document.getElementById('svAccessToast');
+        if (toastActual) {
+            toastActual.style.opacity = '0';
+        }
+    }, 1800);
+}
 
 function tabCandidatosVisible() {
     const tab = document.getElementById('tabCandidatos');
@@ -203,6 +242,7 @@ async function abrirConfigAreaSegura(tabObjetivo = 'votantes') {
     const sesionActiva = await validarSesionAdminServidor();
 
     if (!sesionActiva) {
+        window.__tabObjetivoTrasLogin = tabObjetivo;
         ocultarAreaConfiguracion();
         mostrarModalKey();
         return false;
@@ -214,6 +254,8 @@ async function abrirConfigAreaSegura(tabObjetivo = 'votantes') {
     document.getElementById('configArea')?.classList.remove('hidden');
     document.getElementById('modalKey')?.classList.add('hidden');
     mostrarTab(tabObjetivo);
+    const seccion = tabObjetivo === 'resultados' ? 'Resultados' : 'Configuración';
+    mostrarIndicadorAcceso(`Acceso autorizado: ${seccion}`);
     return true;
 }
 
@@ -250,9 +292,9 @@ window.addEventListener('load', async function() {
         document.getElementById('configArea').classList.remove('hidden');
         document.getElementById('modalKey').classList.add('hidden');
         
-        // Esconder botones de configuración (ya está en panel)
+        // Mantener visibles los tres botones de acceso rápido
         if (configAccessDiv) {
-            configAccessDiv.style.display = 'none';
+            configAccessDiv.style.display = 'flex';
         }
         
         // Cargar datos del panel administrativo
@@ -1966,6 +2008,10 @@ function iniciarActualizacionCandidatosAdmin() {
     iniciarRealtimeCandidatosAdmin();
 }
 
+async function abrirTabConfiguracion() {
+    await abrirConfigAreaSegura('votantes');
+}
+
 async function abrirTabResultados() {
     await abrirConfigAreaSegura('resultados');
 }
@@ -2264,7 +2310,9 @@ async function verificarKey() {
             document.getElementById('modalKey').classList.add('hidden');
             document.getElementById('usuarioInput').value = '';
             document.getElementById('passwordInput').value = '';
-            await abrirConfigAreaSegura('votantes');
+            const tabObjetivo = window.__tabObjetivoTrasLogin || 'votantes';
+            window.__tabObjetivoTrasLogin = 'votantes';
+            await abrirConfigAreaSegura(tabObjetivo);
         } else {
             alert('Error: ' + (data.error || 'Credenciales inválidas'));
         }
