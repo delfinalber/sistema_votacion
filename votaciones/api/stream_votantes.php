@@ -21,6 +21,7 @@ if ($lastActivity > 0 && (time() - $lastActivity) > $maxIdleSeconds) {
 }
 
 $_SESSION['admin_last_activity'] = time();
+session_write_close();
 
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');

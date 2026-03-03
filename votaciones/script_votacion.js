@@ -20,6 +20,7 @@ window.__votantesEventSource = null;
 window.__debounceBusquedaVotante = null;
 window.__tabObjetivoTrasLogin = 'votantes';
 window.__toastAccesoTimer = null;
+window.__loginAdminEnProceso = false;
 const EVENTO_ACTUALIZACION_CANDIDATOS = 'sv_candidatos_updated_at';
 const EVENTO_ACTUALIZACION_VOTANTES = 'sv_votantes_updated_at';
 
@@ -93,7 +94,7 @@ function iniciarTimerModalAcceso() {
 }
 
 function inicializarEventosModalKey() {
-    const botonAcceder = document.querySelector('#modalKey .btn-agregar');
+    const botonAcceder = document.getElementById('btnModalAcceder');
     if (botonAcceder && botonAcceder.dataset.bindClick !== '1') {
         botonAcceder.dataset.bindClick = '1';
         botonAcceder.addEventListener('click', function(event) {
@@ -102,7 +103,7 @@ function inicializarEventosModalKey() {
         });
     }
 
-    const botonCancelar = document.querySelector('#modalKey .btn-cancelar');
+    const botonCancelar = document.getElementById('btnModalCancelarAcceso');
     if (botonCancelar && botonCancelar.dataset.bindClick !== '1') {
         botonCancelar.dataset.bindClick = '1';
         botonCancelar.addEventListener('click', function(event) {
@@ -113,25 +114,23 @@ function inicializarEventosModalKey() {
 }
 
 function inicializarEventosAccesoRapido() {
-    const contenedor = document.querySelector('.config-access');
-    if (!contenedor || contenedor.dataset.bindClickDelegado === '1') return;
-
-    contenedor.dataset.bindClickDelegado = '1';
-    contenedor.addEventListener('click', function(event) {
-        const boton = event.target.closest('button');
-        if (!boton) return;
-
-        if (boton.id === 'btnAccesoConfiguracion') {
+    const botonConfig = document.getElementById('btnAccesoConfiguracion');
+    if (botonConfig && botonConfig.dataset.bindClick !== '1') {
+        botonConfig.dataset.bindClick = '1';
+        botonConfig.addEventListener('click', function(event) {
             event.preventDefault();
             abrirTabConfiguracion();
-            return;
-        }
+        });
+    }
 
-        if (boton.id === 'btnAccesoResultados') {
+    const botonResultados = document.getElementById('btnAccesoResultados');
+    if (botonResultados && botonResultados.dataset.bindClick !== '1') {
+        botonResultados.dataset.bindClick = '1';
+        botonResultados.addEventListener('click', function(event) {
             event.preventDefault();
             abrirTabResultados();
-        }
-    });
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -2383,8 +2382,11 @@ function cerrarModalKey() {
 }
 
 async function verificarKey() {
+    if (window.__loginAdminEnProceso) return;
+
     const usuario = document.getElementById('usuarioInput').value.trim();
     const password = document.getElementById('passwordInput').value.trim();
+    const btnAcceder = document.getElementById('btnModalAcceder');
     
     if (!usuario || !password) {
         alert('Por favor ingrese usuario y contraseña');
@@ -2392,6 +2394,12 @@ async function verificarKey() {
     }
     
     try {
+        window.__loginAdminEnProceso = true;
+        if (btnAcceder) {
+            btnAcceder.disabled = true;
+            btnAcceder.textContent = 'Validando...';
+        }
+
         const response = await fetch(window.location.origin + '/sistema_votacion/votaciones/api/validar_admin.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2420,6 +2428,12 @@ async function verificarKey() {
     } catch (error) {
         console.error('Error:', error);
         alert('Error al validar credenciales');
+    } finally {
+        window.__loginAdminEnProceso = false;
+        if (btnAcceder) {
+            btnAcceder.disabled = false;
+            btnAcceder.textContent = 'Acceder';
+        }
     }
 }
 
