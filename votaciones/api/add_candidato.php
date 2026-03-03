@@ -79,6 +79,7 @@ if ($stmt->execute()) {
         'foto' => $foto
     ];
     http_response_code(200);
+    @file_put_contents(__DIR__ . '/_candidatos_version.txt', (string) microtime(true), LOCK_EX);
     echo json_encode(['success' => true, 'data' => $new_candidato]);
 } else {
     http_response_code(500);

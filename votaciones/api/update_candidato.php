@@ -31,6 +31,7 @@ switch($campo) {
 $stmt->bind_param("si", $valor, $id);
 
 if ($stmt->execute()) {
+    @file_put_contents(__DIR__ . '/_candidatos_version.txt', (string) microtime(true), LOCK_EX);
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'error' => $stmt->error]);

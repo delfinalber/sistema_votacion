@@ -31,6 +31,7 @@ try {
     if ($stmt->execute()) {
         $conn->commit();
         http_response_code(200);
+        @file_put_contents(__DIR__ . '/_candidatos_version.txt', (string) microtime(true), LOCK_EX);
         echo json_encode(['success' => true, 'message' => 'Candidato y sus votos eliminados correctamente']);
     } else {
         $conn->rollback();

@@ -13,6 +13,7 @@ let segundosCargaVotantesExcel = 30;
 let cargaVotantesExcelPendiente = null;
 window.__intervaloCandidatosAdmin = null;
 window.__intervaloCandidatosVotacion = null;
+window.__candidatosEventSource = null;
 const EVENTO_ACTUALIZACION_CANDIDATOS = 'sv_candidatos_updated_at';
 
 function tabCandidatosVisible() {
@@ -21,11 +22,58 @@ function tabCandidatosVisible() {
     return !!tab && !!config && !tab.classList.contains('hidden') && !config.classList.contains('hidden');
 }
 
+function votacionConVotanteVisible() {
+    const votanteInfo = document.getElementById('votanteInfo');
+    const votingArea = document.getElementById('votingArea');
+    return !!votanteActual && !!votanteInfo && !!votingArea && !votanteInfo.classList.contains('hidden') && !votingArea.classList.contains('hidden');
+}
+
 function notificarActualizacionCandidatos() {
     try {
         localStorage.setItem(EVENTO_ACTUALIZACION_CANDIDATOS, String(Date.now()));
     } catch (error) {
         console.warn('No se pudo notificar actualización de candidatos:', error);
+    }
+}
+
+function detenerRealtimeCandidatosAdmin() {
+    if (window.__candidatosEventSource) {
+        window.__candidatosEventSource.close();
+        window.__candidatosEventSource = null;
+    }
+}
+
+function iniciarRealtimeCandidatosAdmin() {
+    if (window.__candidatosEventSource) return;
+
+    try {
+        const url = `${window.location.origin}/sistema_votacion/votaciones/api/stream_candidatos.php`;
+        const eventSource = new EventSource(url);
+
+        eventSource.addEventListener('candidatos_updated', async () => {
+            const data = await cargarCandidatos();
+            if (!data || !data.success) return;
+
+            if (tabCandidatosVisible()) {
+                mostrarListaCandidatos('personeros', candidatos.personeros || []);
+                mostrarListaCandidatos('contralores', candidatos.contralores || []);
+            }
+
+            if (votacionConVotanteVisible()) {
+                cargarCandidatosInterfaz();
+            }
+        });
+
+        eventSource.onerror = () => {
+            detenerRealtimeCandidatosAdmin();
+            setTimeout(() => {
+                iniciarRealtimeCandidatosAdmin();
+            }, 3000);
+        };
+
+        window.__candidatosEventSource = eventSource;
+    } catch (error) {
+        console.warn('No se pudo iniciar canal en tiempo real de candidatos:', error);
     }
 }
 
@@ -120,13 +168,24 @@ window.addEventListener('load', async function() {
             console.error('Error al cargar candidatos:', error);
         }
     }
+
+    iniciarRealtimeCandidatosAdmin();
 });
 
 window.addEventListener('storage', async function(event) {
     if (event.key !== EVENTO_ACTUALIZACION_CANDIDATOS) return;
-    if (!tabCandidatosVisible()) return;
 
-    await cargarTabCandidatos();
+    const data = await cargarCandidatos();
+    if (!data || !data.success) return;
+
+    if (tabCandidatosVisible()) {
+        mostrarListaCandidatos('personeros', candidatos.personeros || []);
+        mostrarListaCandidatos('contralores', candidatos.contralores || []);
+    }
+
+    if (votacionConVotanteVisible()) {
+        cargarCandidatosInterfaz();
+    }
 });
 
 // ======================================
@@ -634,7 +693,6 @@ function mostrarListaCandidatos(tipo, candidatos) {
         infoDiv.innerHTML = `
             <strong>${candidato.nombre}</strong>
             <small>Cargo: ${candidato.cargo || (tipo === 'personeros' ? 'Personero' : 'Contralor')}</small>
-            <small>Número: ${candidato.numero}</small>
         `;
         fotoDiv.appendChild(infoDiv);
         
@@ -1702,6 +1760,7 @@ async function cargarTabCandidatos() {
 function iniciarActualizacionCandidatosAdmin() {
     detenerActualizacionCandidatosAdmin();
     cargarTabCandidatos();
+    iniciarRealtimeCandidatosAdmin();
 }
 
 function abrirTabResultados() {
@@ -2059,6 +2118,7 @@ document.addEventListener('click', function(event) {
 window.addEventListener('beforeunload', function() {
     detenerActualizacionCandidatosVotacion();
     detenerActualizacionCandidatosAdmin();
+    detenerRealtimeCandidatosAdmin();
     detenerActualizacionResultadosAdmin();
 });
 
